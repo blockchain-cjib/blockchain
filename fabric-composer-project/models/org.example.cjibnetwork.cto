@@ -18,15 +18,16 @@
 
 namespace org.example.cjibnetwork
 
-asset PersonInfo identified by BSN{
+asset PersonInfo identified by BSN {
   o String BSN
-  o String name
-  o String Adress
-  o Double Salary
+  o String firstName
+  o String lastName	
+  o String address
+  o Double salary
   --> Municipality owner
 }
 
-participant Municipality identified by munId{
+participant Municipality identified by munId {
   o String munId
 }
 
