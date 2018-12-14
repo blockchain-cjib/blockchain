@@ -18,3 +18,8 @@ composer card import --file bnc
 #check deployment by pinging
 composer network ping --card admin@network-name
 
+```console
+foo@bar:~$ make create-card
+foo
+```
+
