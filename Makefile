@@ -1,3 +1,7 @@
+restart-fabric-dev-server:
+	cd fabric-composer-project/fabric-dev-servers && \
+	 ./teardownFabric.sh && docker rm $(docker ps -aq) && ./startFabric.sh
+
 create-card:
 	cd fabric-composer-project && \
 	composer card create -n network-name \
