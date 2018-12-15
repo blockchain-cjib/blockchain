@@ -18,8 +18,8 @@
 
 namespace org.example.cjibnetwork
 
-asset PersonInfo identified by BSN {
-  o String BSN
+asset PersonInfo identified by bsn {
+  o String bsn
   o String firstName
   o String lastName	
   o String address
@@ -31,12 +31,13 @@ participant Municipality identified by munId {
   o String munId
 }
 
-participant Client identified by clientId{
-  o String clientId
-}
-
 transaction createPersonInfo {
   --> PersonInfo personinfo
 }
 
+@returns(Boolean)
+transaction cjibGetPersonInfo {
+  o String fineAmount
+  o String bsn
+}
 

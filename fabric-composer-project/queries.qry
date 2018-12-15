@@ -1,0 +1,5 @@
+query getCitizen {
+  description: "Get single citizen by BSN"
+  statement:
+      SELECT org.example.cjibnetwork.PersonInfo WHERE (bsn == _$bsnParam)
+}
