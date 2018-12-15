@@ -32,7 +32,7 @@ participant Municipality identified by munId {
 }
 
 transaction createPersonInfo {
-  --> PersonInfo personinfo
+  o PersonInfo personinfo
 }
 
 @returns(String)

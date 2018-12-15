@@ -1,8 +1,14 @@
-// async function uploadInfo(creation){
-//     let assetRegistry = await
-//     getAssetRegistry(org.example.cjibnetwork.PersonInfo);
-//     await assetRegistry.update(creation.personinfo);
-// }
+/**
+ * Trans
+ * @param {org.example.cjibnetwork.createPersonInfo} transaction instance
+ * @transaction
+ */
+async function createPersonInfo(tx){
+    if (tx.personinfo.consent) {
+        let assetRegistry = await getAssetRegistry('org.example.cjibnetwork.PersonInfo');
+        await assetRegistry.add(tx.personinfo);
+    }
+}
 
 /**
  * Trans
