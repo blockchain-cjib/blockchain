@@ -1,14 +1,22 @@
-async function uploadInfo(creation){
-    let assetRegistry = await 
-    getAssetRegistry(org.example.cjibnetwork.PersonInfo);
-    await assetRegistry.update(creation.personinfo);
-}
+// async function uploadInfo(creation){
+//     let assetRegistry = await
+//     getAssetRegistry(org.example.cjibnetwork.PersonInfo);
+//     await assetRegistry.update(creation.personinfo);
+// }
 
+/**
+ * Trans
+ * @param {org.example.cjibnetwork.cjibGetPersonInfo} transaction instance
+ * @transaction
+ */
 async function cjibGetPersonInfo(tx) {
 
-    let citizen = await query('getCitizen', {bsnParam: tx.bsn})[0];
+    let citizen = await query('getCitizen', {bsnParam: tx.bsn});
 
-    let citizenSalary = citizen.salary;
+    let citizenSalary = citizen[0].salary;
 
-    return citizenSalary > tx.fine;
+    if (citizenSalary > tx.fineAmount) {
+        return "True";
+    }
+    return "False";
 }

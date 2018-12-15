@@ -35,9 +35,9 @@ transaction createPersonInfo {
   --> PersonInfo personinfo
 }
 
-@returns(Boolean)
+@returns(String)
 transaction cjibGetPersonInfo {
-  o String fineAmount
+  o Double fineAmount
   o String bsn
 }
 
