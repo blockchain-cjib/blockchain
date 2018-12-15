@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../api.service';
-import { PersonInfo } from '../../PersonInfo';
+import { PersonInfo } from '../../org.example.cjibnetwork';
 
 @Component({
   selector: 'app-citizen-form',
@@ -8,12 +8,14 @@ import { PersonInfo } from '../../PersonInfo';
   styleUrls: ['./citizen-form.component.css']
 })
 export class CitizenFormComponent implements OnInit {
-  person:PersonInfo = {
-    bsn: undefined,
-    name: undefined,
+  person = {
+    BSN: undefined,
+    firstName: undefined,
+    lastName: undefined,
     address: undefined,
     salary: undefined,
-    owner: {munId: undefined}
+    consent: false,
+    owner: {munId: "1"} // mock for now 
   }
   
   persons: PersonInfo[];
@@ -29,12 +31,11 @@ export class CitizenFormComponent implements OnInit {
   }
 
   uploadPersonInformation(): void {
-    this.person.owner.munId = "1";  // mock for now 
+    this.person.owner.munId = "1";  
 
     this.apiService.uploadPersonInformation(this.person as PersonInfo)
     .subscribe(uploadedCitizenInfo => {
       console.log(uploadedCitizenInfo)
     });
   }
-
 }

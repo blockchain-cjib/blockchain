@@ -32,12 +32,13 @@ participant Municipality identified by munId {
 }
 
 transaction createPersonInfo {
-  --> PersonInfo personinfo
+  o PersonInfo personinfo
 }
 
 @returns(String)
 transaction cjibGetPersonInfo {
   o Double fineAmount
   o String bsn
+  o Integer months
 }
 

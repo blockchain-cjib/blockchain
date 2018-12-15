@@ -33,8 +33,21 @@
       <input type="text" class="form-control" id="salary" name="salary" [(ngModel)]="person.salary">
     </div>
 
-    <button type="submit" class="btn btn-success" (click)="uploadPersonInformation()">Upload</button>
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" id="consent" name="consent" [(ngModel)]="person.consent">
+      <label class="form-check-label" for="consent">I acknowledge that my information will be published on the blockchain</label>
+    </div>
 
-    <pre>{{person | json}}</pre>
+    <div style="margin-top: 20px;" class="form-group">
+      <!-- <label for="exampleFormControlFile1">Upload Consent form</label> -->
+      <div *ngIf="person.consent">
+        <input type="file" class="form-control-file" id="upload" disabled>
+      </div>
+      <div *ngIf="!person.consent">
+          <input type="file" class="form-control-file" id="upload">
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success" (click)="uploadPersonInformation()">Upload</button>
   </form>
 </div>

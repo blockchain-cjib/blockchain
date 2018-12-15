@@ -17,3 +17,8 @@ foo@bar:~$ make fabric-init-network
 ```console
 foo@bar:~$ make fabric-upgrade-network
 ```
+
+#### Start rest server
+```console
+foo@bar:~$ make start-rest
+```
