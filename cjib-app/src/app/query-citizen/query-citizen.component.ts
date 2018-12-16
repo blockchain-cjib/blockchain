@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../api.service';
 
 @Component({
   selector: 'app-query-citizen',
@@ -12,7 +13,7 @@ export class QueryCitizenComponent implements OnInit {
   selectedType = null;
   queryTypes = [];
 
-  constructor() { 
+  constructor(private apiService: ApiService) { 
     this.queryTypes = [
       {id: 1, text: "Can person pay X?"},
       {id: 2, text: "Can person pay X in Y months?"},
@@ -27,5 +28,12 @@ export class QueryCitizenComponent implements OnInit {
   queryTypeChanged = function () {
     this.money = null;
     this.months = null;
+  }
+
+  queryCitizenAbilityToPay = function() {
+    this.apiService.queryCitizenAbilityToPay(this.money, this.bsn)
+    .subscribe(result => {
+      console.log(result)
+    });
   }
 }
