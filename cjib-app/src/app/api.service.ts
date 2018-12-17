@@ -19,13 +19,9 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  queryCitizenAbilityToPay(amount: number, bsnNo: string): Observable<string> {
-    var body = {
-      fineAmount: amount,
-      bsn: bsnNo
-    }
-    return this.http.post(this.apiUrl + 'cjibGetPersonInfo', body, httpOptions).pipe(
-      map(this.extractData),
+  queryCitizenAbilityToPay(requestBody): Observable<any> {
+    return this.http.post(this.apiUrl + 'cjibGetPersonInfo', requestBody, httpOptions).pipe(
+      map(res => res),
       catchError(this.handleError))
   }
 
