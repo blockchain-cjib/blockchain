@@ -28,6 +28,7 @@ asset PersonInfo identified by bsn {
   o String lastName	
   o String address
   o Double salary
+  o Boolean consent
   --> Municipality owner
 }
 

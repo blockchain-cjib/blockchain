@@ -9,6 +9,8 @@ async function createPersonInfo(tx){
     if (tx.personinfo.consent) {
         let assetRegistry = await getAssetRegistry('org.example.cjibnetwork.PersonInfo');
         await assetRegistry.add(tx.personinfo);
+    } else {
+        throw new Error('Citizen consent was not provided');
     }
 }
 
@@ -23,8 +25,7 @@ async function cjibGetPersonInfo(tx) {
     response.answer = null;
     
     let citizen = await query('getCitizen', {bsnParam: tx.bsn});
-    console.log('CITIZEN IS: ' + citizen);
-    if (citizen) {
+    if (citizen.length !== 0) {
         let citizenSalary = citizen[0].salary;
         response.answer = canPay(citizenSalary, tx.fineAmount, tx.months);
         return response;
