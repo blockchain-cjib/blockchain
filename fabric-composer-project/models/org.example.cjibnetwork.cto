@@ -43,7 +43,7 @@ transaction createPersonInfo {
 transaction cjibGetPersonInfo {
   o Double fineAmount
   o String bsn
-  o Integer months
+  o Integer months optional
 }
 
 
