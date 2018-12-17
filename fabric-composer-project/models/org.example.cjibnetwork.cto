@@ -19,7 +19,7 @@
 namespace org.example.cjibnetwork
 
 concept Response {
-    o Boolean answer
+    o String answer
 }
 
 asset PersonInfo identified by bsn {

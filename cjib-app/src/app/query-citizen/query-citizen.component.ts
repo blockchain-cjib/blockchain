@@ -57,7 +57,13 @@ export class QueryCitizenComponent implements OnInit {
 
 	queryCitizenAbilityToPaySuccessCallback(result) {
         this.loading = false;
-        this.queryAnswer = result.answer;
+        if (result.answer === 'true') {
+            this.queryAnswer = true;
+        } else if (result.answer === 'false') {
+            this.queryAnswer = false;
+        } else {
+            this.queryAnswer = null;
+        }
 	}
 
 	queryCitizenAbilityToPayFailCallback(error) {

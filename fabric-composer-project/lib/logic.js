@@ -22,7 +22,7 @@ async function createPersonInfo(tx){
 async function cjibGetPersonInfo(tx) {
     const factory = getFactory();
     const response = factory.newConcept('org.example.cjibnetwork', 'Response');
-    response.answer = null;
+    response.answer = 'null';
     
     let citizen = await query('getCitizen', {bsnParam: tx.bsn});
     if (citizen.length !== 0) {
@@ -41,8 +41,8 @@ async function cjibGetPersonInfo(tx) {
  */
 function canPay(citizenSalary, fineAmount, months) {
     if(months === undefined) {
-        return (citizenSalary >= fineAmount);
+        return (citizenSalary >= fineAmount) ?  'true' : 'false';
     } else {
-        return (citizenSalary * months >= fineAmount);
+        return (citizenSalary * months >= fineAmount) ? 'true' : 'false';
     }
 }
