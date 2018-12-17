@@ -8,6 +8,19 @@
 
 <div class="container">
   <form>
+    <div [hidden]="!errorAlert" class="alert alert-danger" role="alert">
+        <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        An unexpected error has occurred. Please contact the administrator.
+    </div>
+    <div [hidden]="!successAlert" class="alert alert-success" role="alert">
+        <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        Citizen information have been successfully uploaded.
+    </div>
+
     <div class="form-group">
       <label for="bsn">BSN</label>
       <input type="text" class="form-control" id="bsn" name="bsn" [(ngModel)]="person.bsn" required>
@@ -48,6 +61,10 @@
       </div>
     </div>
 
-    <button type="submit" class="btn btn-success" (click)="uploadPersonInformation()">Upload</button>
+    <button type="submit" class="btn btn-success" (click)="uploadPersonInformation()">
+        Upload
+        <i [hidden]="loading" class="fa fa-cloud-upload"></i>
+        <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
+    </button>
   </form>
 </div>

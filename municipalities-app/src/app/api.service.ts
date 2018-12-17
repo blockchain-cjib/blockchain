@@ -17,7 +17,7 @@ httpOptions.headers.append('Accept', 'application/json');
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'localhost:3000/api/';  // URL to web api
+  private apiUrl = 'http://localhost:3000/api/';  // URL to web api
 
   constructor(private http: HttpClient) { }
 
@@ -28,7 +28,7 @@ export class ApiService {
   }
 
   /** POST: POST a createPersonInfo transaction */
-  uploadPersonInformation (personInfo: PersonInfo): Observable<createPersonInfo> {
+  uploadPersonInformation (personInfo: any): Observable<createPersonInfo> {
     return this.http.post(this.apiUrl + 'createPersonInfo', personInfo, httpOptions).pipe(
       map(this.extractData),
       catchError(this.handleError))
@@ -37,13 +37,13 @@ export class ApiService {
   private handleError(error: any): Observable<string> {
       // In a real world app, we might use a remote logging infrastructure
       // We'd also dig deeper into the error to get a better message
-      const errMsg = (error.message) ? error.message :
-        error.status ? `${error.status} - ${error.statusText}` : 'Server error';
+      const errMsg = (error.message) ? error.message : error.status ? `${error.status} - ${error.statusText}` : 'Server error';
       console.error(errMsg); // log to console instead
       return Observable.throw(errMsg);
   }
 
   private extractData(res: Response): any {
-      return res.json();
+      console.log(res);
+      return res;
   }
 }
