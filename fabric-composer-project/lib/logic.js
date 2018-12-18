@@ -20,7 +20,9 @@ async function createPersonInfo(tx){
 async function cjibGetPersonInfo(tx) {
 
     let citizen = await query('getCitizen', {bsnParam: tx.bsn});
-
+    if(!citizen.length){
+        return null;
+    }
     let citizenSalary = citizen[0].salary;
 
     return canPay(citizenSalary, tx.fineAmount, tx.months);
