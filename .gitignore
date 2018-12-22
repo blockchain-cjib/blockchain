@@ -1,3 +1,6 @@
 .idea
 *.bna
 *.card
+
+fabric-network/config/*
+fabric-network/crypto-config/*
