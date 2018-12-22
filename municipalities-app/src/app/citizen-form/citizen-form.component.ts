@@ -8,34 +8,62 @@ import { PersonInfo } from '../../org.example.cjibnetwork';
   styleUrls: ['./citizen-form.component.css']
 })
 export class CitizenFormComponent implements OnInit {
-  person = {
-    BSN: undefined,
-    firstName: undefined,
-    lastName: undefined,
-    address: undefined,
-    salary: undefined,
-    consent: false,
-    owner: {munId: "1"} // mock for now 
-  }
+    mockMunicipalityId = "1";
+
+    loading = false;
+    errorAlert = false;
+    successAlert = false;
+
+    person = {
+        BSN: undefined,
+        firstName: undefined,
+        lastName: undefined,
+        address: undefined,
+        salary: undefined,
+        consent: false,
+        owner: "org.example.cjibnetwork.Municipality#" + this.mockMunicipalityId
+    }
   
-  persons: PersonInfo[];
-  
-  constructor(private apiService: ApiService) { }
+    persons: PersonInfo[];
+    
+    constructor(private apiService: ApiService) { }
 
-  ngOnInit() {
-  }
+    ngOnInit() {
+    }
 
-  getAllPersonInformation(): void {
-    this.apiService.getAllPersonInformation()
-        .subscribe(persons => this.persons = persons);
-  }
+    closeAlert = function() {
+		this.errorAlert = false;
+		this.successAlert = false;
+    }
+    
+    getAllPersonInformation(): void {
+        this.apiService.getAllPersonInformation()
+            .subscribe(persons => this.persons = persons);
+    }
 
-  uploadPersonInformation(): void {
-    this.person.owner.munId = "1";  
+    uploadPersonInformation(): void {
+        this.loading = true;
+        this.closeAlert();
 
-    this.apiService.uploadPersonInformation(this.person as PersonInfo)
-    .subscribe(uploadedCitizenInfo => {
-      console.log(uploadedCitizenInfo)
-    });
-  }
+        var body = {
+            personinfo: this.person
+        }
+        this.apiService.uploadPersonInformation(body)
+        .subscribe(
+            res => this.uploadPersonInformationSuccessCallback(res),
+            err => this.uploadPersonInformationFailCallback(err)
+        );
+    }
+
+    uploadPersonInformationSuccessCallback (result) {
+        this.loading = false;
+        this.successAlert = true;
+        console.log(result);
+    }
+
+    uploadPersonInformationFailCallback(error) {
+        this.loading = false;
+        this.errorAlert = true;
+        console.log(error);
+    }
 }
