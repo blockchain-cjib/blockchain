@@ -3,14 +3,39 @@ CC_LANG=node
 CC_VERSION=$(shell date +"%y.%m.%d.%H%M%S")
 CC_SRC_PATH=/opt/gopath/src/github.com/chaincode
 DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+CHANNEL_NAME=mychannel
 
 clean-docker:
 	docker rm $(shell docker ps -a -q) | true && \
 	docker rmi $(shell docker images -q)
 
 fabric-init-crypto:
-	cd $(FABRIC_ROOT_DIR) && \
-	./generate.sh
+	rm -fr $(FABRIC_ROOT_DIR)/config/*
+	rm -fr $(FABRIC_ROOT_DIR)/crypto-config/*
+
+	# generate crypto material
+	cd $(FABRIC_ROOT_DIR) && ./bin/cryptogen generate \
+		--config=./crypto-config.yaml
+
+	# generate genesis block for orderer
+	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+		-profile OneOrgOrdererGenesis \
+		-outputBlock ./config/genesis.block
+
+	# generate channel configuration transaction
+	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+		-profile OneOrgChannel \
+		-outputCreateChannelTx ./config/channel.tx \
+		-channelID $(CHANNEL_NAME)
+
+	# generate anchor peer transaction
+	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+		-profile OneOrgChannel \
+		-outputAnchorPeersUpdate ./config/Org1MSPanchors.tx \
+		-channelID $(CHANNEL_NAME) \
+		-asOrg Org1MSP
+
+
 
 fabric-start-network:
 	cd $(FABRIC_ROOT_DIR) && \

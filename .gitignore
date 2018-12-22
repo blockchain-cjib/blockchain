@@ -2,21 +2,5 @@
 *.bna
 *.card
 
-fabric-network/config/*.tx
-fabric-network/config/*.block
-fabric-network/chaincode/hyperledger/
-fabric-network/crypto-config/ordererOrganizations/example.com/ca/*_sk
-fabric-network/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/keystore/
-fabric-network/crypto-config/ordererOrganizations/example.com/tlsca/*_sk
-fabric-network/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/
-fabric-network/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/tls/client.crt
-fabric-network/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/tls/client.key
-fabric-network/crypto-config/peerOrganizations/org1.example.com/ca/*_sk
-fabric-network/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/keystore/
-fabric-network/crypto-config/peerOrganizations/org1.example.com/tlsca/*_sk
-fabric-network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/
-fabric-network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.crt
-fabric-network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.key
-fabric-network/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/
-fabric-network/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.crt
-fabric-network/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.key
+fabric-network/config/*
+fabric-network/crypto-config/*
