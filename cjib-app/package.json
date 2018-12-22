@@ -1,9 +1,12 @@
 {
   "name": "cjib-app",
   "version": "0.0.0",
+  "bin": {
+    "Hyperdebt": "app.js"
+  },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 5000",
+    "start": "ng serve --proxy-config proxy.conf.js --host 0.0.0.0 --port 5000",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",

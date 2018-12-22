@@ -18,12 +18,17 @@
 
 namespace org.example.cjibnetwork
 
+concept Response {
+    o String answer
+}
+
 asset PersonInfo identified by bsn {
   o String bsn
   o String firstName
   o String lastName	
   o String address
   o Double salary
+  o Boolean consent
   --> Municipality owner
 }
 
@@ -35,10 +40,11 @@ transaction createPersonInfo {
   o PersonInfo personinfo
 }
 
-@returns(String)
+@returns(Response)
 transaction cjibGetPersonInfo {
   o Double fineAmount
   o String bsn
-  o Integer months
+  o Integer months optional
 }
+
 

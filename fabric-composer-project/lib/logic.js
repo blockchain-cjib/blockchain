@@ -9,6 +9,8 @@ async function createPersonInfo(tx){
     if (tx.personinfo.consent) {
         let assetRegistry = await getAssetRegistry('org.example.cjibnetwork.PersonInfo');
         await assetRegistry.add(tx.personinfo);
+    } else {
+        throw new Error('Citizen consent was not provided');
     }
 }
 
@@ -18,27 +20,29 @@ async function createPersonInfo(tx){
  * @transaction
  */
 async function cjibGetPersonInfo(tx) {
-
+    const factory = getFactory();
+    const response = factory.newConcept('org.example.cjibnetwork', 'Response');
+    response.answer = 'null';
+    
     let citizen = await query('getCitizen', {bsnParam: tx.bsn});
-    if(!citizen.length){
-        return null;
+    if (citizen.length !== 0) {
+        let citizenSalary = citizen[0].salary;
+        response.answer = canPay(citizenSalary, tx.fineAmount, tx.months);
+        return response;
     }
-    let citizenSalary = citizen[0].salary;
-
-    return canPay(citizenSalary, tx.fineAmount, tx.months);
-
+    return response;
 }
 
-function canPay(citizenSalary, fineAmount, months){
-    if(months == undefined){
-        if(citizenSalary >= fineAmount){
-            return "True";
-        }
-        return "False";
-    }else{
-        if(citizenSalary*months >= fineAmount){
-            return "True";
-        }
-        return "False";
+/**
+ * Checks whether the citizen is able to pay the provided fineAmount or not
+ * @param {*} citizenSalary the salary of the citizen
+ * @param {*} fineAmount the amount to be paid
+ * @param {*} months used to check if he will be able to pay in the next months
+ */
+function canPay(citizenSalary, fineAmount, months) {
+    if(months === undefined) {
+        return (citizenSalary >= fineAmount) ?  'true' : 'false';
+    } else {
+        return (citizenSalary * months >= fineAmount) ? 'true' : 'false';
     }
 }

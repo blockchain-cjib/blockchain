@@ -4,8 +4,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, filter, switchMap, catchError } from 'rxjs/operators';
 
-import { createPersonInfo, PersonInfo } from '../org.example.cjibnetwork';
-
 const httpOptions = {
   headers: new HttpHeaders()
 };
@@ -21,29 +19,20 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  public getAllPersonInformation(): Observable<PersonInfo[]> {
-    return this.http.get(this.apiUrl + 'PersonInfo').pipe(
-        map(this.extractData),
-        catchError(this.handleError));
-  }
-
-  /** POST: POST a createPersonInfo transaction */
-  uploadPersonInformation (personInfo: any): Observable<createPersonInfo> {
-    return this.http.post(this.apiUrl + 'createPersonInfo', personInfo, httpOptions).pipe(
-      map(this.extractData),
+  queryCitizenAbilityToPay(requestBody): Observable<any> {
+    return this.http.post(this.apiUrl + 'cjibGetPersonInfo', requestBody, httpOptions).pipe(
+      map(res => res),
       catchError(this.handleError))
   }
 
   private handleError(error: any): Observable<string> {
-      // In a real world app, we might use a remote logging infrastructure
-      // We'd also dig deeper into the error to get a better message
       const errMsg = (error.message) ? error.message : error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-      console.error(errMsg); // log to console instead
+      console.error(errMsg);
       return Observable.throw(errMsg);
   }
 
   private extractData(res: Response): any {
       console.log(res);
-      return res;
+      return res.json();
   }
 }
