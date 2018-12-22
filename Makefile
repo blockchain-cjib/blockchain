@@ -9,11 +9,7 @@ clean-docker:
 	docker rmi $(shell docker images -q)
 
 fabric-init-crypto:
-	# Stop committing generated crap
-	git update-index --assume-unchanged crypto-config
-
 	cd $(FABRIC_ROOT_DIR) && \
-	PATH=$PATH:/home/y/Documents/CS4160\ Blockchain\ Engineering/blockchain/bin \
 	./generate.sh
 
 fabric-start-network:
