@@ -53,6 +53,9 @@ foo@bar:~$ make fabric-dev-all-upgrade
 
 Leave all three windows open when you update some code and just re-run above command in the third terminal.
 
+To actually view the chaincode logging, you need to switch tmux windows. To do this, press `Control+b` and then `p` in 
+the second (tmux) terminal.
+
 #### Invoking chaincode
 Invoke with custom arguments:
 ```console
