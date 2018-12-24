@@ -12,19 +12,11 @@ var Chaincode = class {
     // Initialize the chaincode
     async Init(stub) {
         console.info('Init chaincode');
-        let ret = stub.getFunctionAndParameters();
-        console.info(ret);
-
-        let args = ret.params;
-
-        try {
-            return shim.success();
-        } catch (err) {
-            return shim.error(err);
-        }
+        return shim.success();
     }
 
     async Invoke(stub) {
+        console.info('Transaction ID: ' + stub.getTxID());
 
         // Extract the function and args from the transaction proposal
         let ret = stub.getFunctionAndParameters();
