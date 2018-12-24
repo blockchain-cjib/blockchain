@@ -155,6 +155,12 @@ fabric-dev-chaincode-invoke:
     		-it cli /bin/bash -c \
     			$$'peer chaincode invoke -n mycc -c \'$(CC_ARGS)\' -C myc'
 
+fabric-dev-chaincode-query:
+	cd fabric-network-devmode && \
+			docker exec \
+				-it cli /bin/bash -c \
+					$$'peer chaincode query -n mycc -c \'$(CC_ARGS)\' -C myc'
+
 fabric-dev-all-instantiate:
 	tmux rename-window main
 	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
@@ -162,15 +168,12 @@ fabric-dev-all-instantiate:
 	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "INSTALL DONE" ; sleep 9999'
 
 fabric-dev-all-upgrade:
-	tmux kill-window -t chaincode || tmux kill-window -t launch | true
+	tmux kill-window -t chaincode | true
+	tmux kill-window -t launch | true
 	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
 	sleep 5
 	tmux new-window -n launch 'make fabric-dev-chaincode-upgrade CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE"; sleep 9999'
 
-
-
-fabric-dev-chaincode-query:
-	echo "todo"
 
 start-rest:
 	echo "todo"
