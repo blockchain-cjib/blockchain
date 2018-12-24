@@ -96,7 +96,7 @@ fabric-upgrade-chaincode:
 		-n mycc \
 		-v $(CC_VERSION) \
 		-p "$(CC_SRC_PATH)" \
-		-l "$($LANGUAGE)"
+		-l "$(CC_LANG)"
 
 	docker exec \
 		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
@@ -105,7 +105,7 @@ fabric-upgrade-chaincode:
 		-o orderer.example.com:7050 \
 		-C mychannel \
 		-n mycc \
-		-l "$(LANGUAGE)" \
+		-l "$(CC_LANG)" \
 		-v $(CC_VERSION) \
 		-c '{"Args":[""]}'
 
