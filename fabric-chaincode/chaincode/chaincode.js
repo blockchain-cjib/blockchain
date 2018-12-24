@@ -63,9 +63,11 @@ var Chaincode = class {
         let addressStreet = args[3];
 
         // Check if bsn already exists
+        console.log('Check if already exists');
+
         let citizenState = await stub.getState(bsn);
         if (citizenState.toString()) {
-            throw new Error('Citizen with this BSN already exists ' + marbleName);
+            throw new Error('Citizen with this BSN already exists ' + bsn);
         }
 
         // Create citizen object
@@ -77,17 +79,13 @@ var Chaincode = class {
         citizen.addressStreet = addressStreet;
 
         // Store citizen
-        try {
-            await stub.putState(bsn, Buffer.from(JSON.stringify(citizen)));
-            return shim.success();
-        } catch (err) {
-            return shim.error(err);
-        }
+        await stub.putState(bsn, Buffer.from(JSON.stringify(citizen)));
+        console.info(JSON.stringify(citizen));
     }
 
     async getCitizen(stub, args) {
         if (args.length != 1) {
-            throw new Error('Incorrect number of arguments. Expecting name of the marble to query');
+            throw new Error('Incorrect number of arguments. Expecting 1');
         }
 
         let bsn = args[0];
@@ -95,8 +93,8 @@ var Chaincode = class {
             throw new Error('1st argument (BSN) must be a non-empty string');
         }
 
-        let citizen = await stub.getState(name);
-        if (!citizenState.toString()) {
+        let citizen = await stub.getState(bsn);
+        if (!citizen) {
             throw new Error('Citizen with this BSN does not exist');
         }
 
