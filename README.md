@@ -19,17 +19,7 @@ Leave terminal open, in this window you can view chaincode logging output
 foo@bar:~$ make fabric-dev-chaincode-connect
 ```
 
-#### First time instantiation of chaincode
-```console
-foo@bar:~$ make fabric-dev-chaincode-instantiate
-```
-
-#### Invoke chaincode on the network
-```console
-foo@bar:~$ make fabric-dev-chaincode-invoke
-```
-
-#### Upgrading the network
+#### Installing and upgrading chaincode on the network
 For each upgrade we need to restart the chaincode debugger AND upgrade the network. Because doing this manually 
 is too annoying we can run the two windows in `tmux`.
 
@@ -47,6 +37,12 @@ In the second window you start tmux by executing `tmux`
 In the third window you send commands to the second tmux window, by using the command 
 below:
 
+For the first run:
+```console
+foo@bar:~$ make fabric-dev-all-instantiate
+```
+
+When upgrading:
 ```console
 foo@bar:~$ make fabric-dev-all-upgrade
 ```
@@ -56,12 +52,15 @@ Leave all three windows open when you update some code and just re-run above com
 To actually view the chaincode logging, you need to switch tmux windows. To do this, press `Control+b` and then `p` in 
 the second (tmux) terminal.
 
-#### Invoking chaincode
+#### Invoke chaincode on the network
+```console
+foo@bar:~$ make fabric-dev-chaincode-invoke
+```
+
 Invoke with custom arguments:
 ```console
 foo@bar:~$ make fabric-dev-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
 ```
-
 
 #### Query chaincode on the network
 ```console

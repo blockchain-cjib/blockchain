@@ -144,7 +144,6 @@ fabric-dev-chaincode-instantiate: fabric-dev-chaincode-install
     			$$'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C myc'
 
 fabric-dev-chaincode-upgrade: fabric-dev-chaincode-install
-	# TODO problem wth version, it has to match with the one set during chaincode connect in the ID
 	cd fabric-network-devmode && \
     	docker exec \
     		-it cli /bin/bash -c \
@@ -156,7 +155,7 @@ fabric-dev-chaincode-invoke:
     		-it cli /bin/bash -c \
     			$$'peer chaincode invoke -n mycc -c \'$(CC_ARGS)\' -C myc'
 
-fabric-dev-all-install:
+fabric-dev-all-instantiate:
 	tmux rename-window main
 	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
 	sleep 5
