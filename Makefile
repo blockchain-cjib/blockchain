@@ -4,6 +4,7 @@ CC_VERSION=$(shell date +"%y.%m.%d.%H%M%S")
 CC_SRC_PATH=/opt/gopath/src/github.com/chaincode
 DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
 CHANNEL_NAME=mychannel
+CC_ARGS={"Args":[""]}
 
 clean-docker:
 	docker rm $(shell docker ps -a -q) | true && \
@@ -34,8 +35,6 @@ fabric-init-crypto:
 		-outputAnchorPeersUpdate ./config/Org1MSPanchors.tx \
 		-channelID $(CHANNEL_NAME) \
 		-asOrg Org1MSP
-
-
 
 fabric-start-network:
 	cd $(FABRIC_ROOT_DIR) && \
@@ -85,7 +84,7 @@ fabric-install-chaincode:
 		-n mycc \
 		-l "$(CC_LANG)" \
 		-v $(CC_VERSION) \
-		-c '{"Args":[""]}'
+		-c '$(CC_ARGS)'
 
 
 fabric-upgrade-chaincode:
@@ -103,11 +102,62 @@ fabric-upgrade-chaincode:
 		-e "CORE_PEER_MSPCONFIGPATH=$(DOCKER_CRYPTO_DIR)" \
 		cli peer chaincode upgrade \
 		-o orderer.example.com:7050 \
-		-C mychannel \
+		-C $(CHANNEL_NAME) \
 		-n mycc \
 		-l "$(CC_LANG)" \
 		-v $(CC_VERSION) \
-		-c '{"Args":[""]}'
+		-c '$(CC_ARGS)'
+
+# New citizen: {"Args":["setCitizen","123","James","Delft", "Street 5"]}
+fabric-invoke-chaincode:
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+    	-e "CORE_PEER_MSPCONFIGPATH=$(DOCKER_CRYPTO_DIR)" \
+		cli peer chaincode invoke \
+		-o orderer.example.com:7050 \
+		-C $(CHANNEL_NAME) \
+		-n mycc \
+		--peerAddresses peer0.org1.example.com:7051 \
+		-c '{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
+
+fabric-dev-start-network:
+	cd fabric-network-devmode && \
+	docker rm $(shell docker ps -a -q) | true && \
+	docker-compose -f docker-compose-simple.yaml up
+
+fabric-dev-chaincode-connect:
+	cd fabric-network-devmode && \
+	docker exec \
+		-it chaincode /bin/bash -c \
+			'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:0 node chaincode --peer.address grpc://peer:7052'
+
+fabric-dev-chaincode-install:
+	cd fabric-network-devmode && \
+    	docker exec \
+    		-it cli /bin/bash -c \
+    			'peer chaincode install -p chaincode/chaincode -n mycc -v $(CC_VERSION) -l "$(CC_LANG)"'
+
+fabric-dev-chaincode-instantiate: fabric-dev-chaincode-install
+	cd fabric-network-devmode && \
+    	docker exec \
+    		-it cli /bin/bash -c \
+    			$$'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C myc'
+
+fabric-dev-chaincode-upgrade: fabric-dev-chaincode-install
+	cd fabric-network-devmode && \
+    	docker exec \
+    		-it cli /bin/bash -c \
+    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION)  -c \'$(CC_ARGS)\' -C myc'
+
+fabric-dev-chaincode-invoke:
+	cd fabric-network-devmode && \
+    	docker exec \
+    		-it cli /bin/bash -c \
+    			$$'peer chaincode invoke -n mycc -c \'$(CC_ARGS)\' -C myc'
+
+
+fabric-dev-chaincode-query:
+	echo "todo"
 
 start-rest:
 	echo "todo"
