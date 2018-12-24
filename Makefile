@@ -1,6 +1,6 @@
 FABRIC_ROOT_DIR=fabric-network
 CC_LANG=node
-CC_VERSION=$(shell date +"%y.%m.%d.%H%M%S")
+CC_VERSION=$(shell date +"%y%m%d%H%M%S")
 CC_SRC_PATH=/opt/gopath/src/github.com/chaincode
 DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
 CHANNEL_NAME=mychannel
@@ -129,7 +129,7 @@ fabric-dev-chaincode-connect:
 	cd fabric-network-devmode && \
 	docker exec \
 		-it chaincode /bin/bash -c \
-			'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:0 node chaincode --peer.address grpc://peer:7052'
+			'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer:7052'
 
 fabric-dev-chaincode-install:
 	cd fabric-network-devmode && \
@@ -144,16 +144,30 @@ fabric-dev-chaincode-instantiate: fabric-dev-chaincode-install
     			$$'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C myc'
 
 fabric-dev-chaincode-upgrade: fabric-dev-chaincode-install
+	# TODO problem wth version, it has to match with the one set during chaincode connect in the ID
 	cd fabric-network-devmode && \
     	docker exec \
     		-it cli /bin/bash -c \
-    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION)  -c \'$(CC_ARGS)\' -C myc'
+    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C myc'
 
 fabric-dev-chaincode-invoke:
 	cd fabric-network-devmode && \
     	docker exec \
     		-it cli /bin/bash -c \
     			$$'peer chaincode invoke -n mycc -c \'$(CC_ARGS)\' -C myc'
+
+fabric-dev-all-install:
+	tmux rename-window main
+	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
+	sleep 5
+	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "INSTALL DONE" ; sleep 9999'
+
+fabric-dev-all-upgrade:
+	tmux kill-window -t chaincode || tmux kill-window -t launch | true
+	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
+	sleep 5
+	tmux new-window -n launch 'make fabric-dev-chaincode-upgrade CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE"; sleep 9999'
+
 
 
 fabric-dev-chaincode-query:
