@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../api.service';
 import { PersonInfo } from '../../org.example.cjibnetwork';
 
@@ -9,7 +10,9 @@ import { PersonInfo } from '../../org.example.cjibnetwork';
 })
 export class CitizenFormComponent implements OnInit {
     mockMunicipalityId = "1";
+    uploadCitizenForm: FormGroup;
 
+    submitted = false;
     loading = false;
     errorAlert = false;
     successAlert = false;
@@ -26,10 +29,31 @@ export class CitizenFormComponent implements OnInit {
   
     persons: PersonInfo[];
     
-    constructor(private apiService: ApiService) { }
+    constructor(private apiService: ApiService, private formBuilder: FormBuilder) { }
 
     ngOnInit() {
+        this.uploadCitizenForm = this.formBuilder.group({
+            bsn: ['', Validators.required],
+            firstName: ['', Validators.required],
+            lastName: ['', Validators.required],
+            address: ['', [Validators.required]],
+            salary: ['', [Validators.required, Validators.pattern("^[0-9]*$")]],
+            consent: [false, [Validators.requiredTrue]]
+        });
     }
+
+    onSubmit() {
+        this.submitted = true;
+
+        console.log(this.f.consent.value);
+        // stop here if form is invalid
+        if (this.uploadCitizenForm.invalid) {
+            return;
+        } 
+        this.uploadPersonInformation();
+    }
+
+    get f() { return this.uploadCitizenForm.controls; }
 
     closeAlert = function() {
 		this.errorAlert = false;
@@ -45,9 +69,17 @@ export class CitizenFormComponent implements OnInit {
         this.loading = true;
         this.closeAlert();
 
+        this.person.BSN = this.f.bsn.value;
+        this.person.firstName = this.f.firstName.value;
+        this.person.lastName = this.f.lastName.value;
+        this.person.address = this.f.address.value;
+        this.person.salary = this.f.salary.value;
+        this.person.consent = this.f.consent.value;
+
         var body = {
             personinfo: this.person
         }
+
         this.apiService.uploadPersonInformation(body)
         .subscribe(
             res => this.uploadPersonInformationSuccessCallback(res),
@@ -58,12 +90,12 @@ export class CitizenFormComponent implements OnInit {
     uploadPersonInformationSuccessCallback (result) {
         this.loading = false;
         this.successAlert = true;
-        console.log(result);
+        this.submitted = false;
     }
 
     uploadPersonInformationFailCallback(error) {
         this.loading = false;
         this.errorAlert = true;
-        console.log(error);
+        this.submitted = false;
     }
 }
