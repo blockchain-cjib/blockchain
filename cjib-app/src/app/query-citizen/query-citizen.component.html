@@ -10,68 +10,133 @@
 </style>
 
 <div class="container">
-    <div [hidden]="!errorAlert" class="alert alert-danger" role="alert">
-        <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        An unexpected error has occurred. Please contact the administrator.
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div [hidden]="!errorAlert" class="alert alert-danger" role="alert">
+                <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                An unexpected error has occurred. Please contact the administrator.
+            </div>
+            <!-- Query Type selection -->
+            <form>
+                <div class="form-group">
+                    <label style="font-weight:600;" for="queryType">Select Query type:</label>
+                    <select [(ngModel)]="selectedType" name="queryType" id="queryType" class="form-control" (change)="queryTypeChanged()">
+                        <option *ngFor="let item of queryTypes" [ngValue]="item">
+                            {{item.text}}
+                        </option>
+                    </select>
+                </div>
+            </form>
+            <form *ngIf="selectedType.id !== 2" [formGroup]="queryCitizenForm" (ngSubmit)="onSubmit()">
+                <!-- BSN input -->
+                <div class="form-group">
+                    <label for="bsn">Citizen BSN</label>
+                    <input type="text" id="bsn" class="form-control" 
+                            formControlName="bsn"
+                            [ngClass]="{ 'is-invalid': submitted && f.bsn.errors }">
+                    <div *ngIf="submitted && f.bsn.errors" class="invalid-feedback">
+                        <div *ngIf="f.bsn.errors.required">BSN is required</div>
+                    </div>
+                </div>
+                <!-- Query Type 1 -->
+                <div *ngIf="selectedType.id===1">
+                    <!-- Fine amount input -->
+                    <div class="form-group">
+                        <label for="money">Fine amount</label>
+                        <input type="text" id="money" class="form-control" 
+                            formControlName="money"
+                            [ngClass]="{ 'is-invalid': submitted && f.money.errors }">
+                        <div *ngIf="submitted && f.money.errors" class="invalid-feedback">
+                            <div *ngIf="f.money.errors.required">Fine amount is required</div>
+                            <div *ngIf="f.money.errors.pattern">Fine amount should be numeric</div>
+                        </div>
+                    </div>
+                </div>  
+                
+                <!-- Query Type 3 -->
+                <div *ngIf="selectedType.id===3">
+                    <div class="form-group">
+                        <label for="money">Amount of money (Yearly)</label>
+                        <input type="text" id="money" class="form-control" 
+                            formControlName="money"
+                            [ngClass]="{ 'is-invalid': submitted && f.money.errors }">
+                        <div *ngIf="submitted && f.money.errors" class="invalid-feedback">
+                            <div *ngIf="f.money.errors.required">Amount of money is required</div>
+                            <div *ngIf="f.money.errors.pattern">Fine amount should be numeric</div>
+                        </div>
+                    </div>
+                </div>
+        
+                <button type="submit" class="btn btn-primary">
+                    Search 
+                    <i [hidden]="loading" class="fa fa-search"></i>
+                    <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
+                </button>
+        
+                <button style="margin-left: 5px;" type="button" class="btn btn-info">
+                    History
+                    <i class="fa fa-history" aria-hidden="true"></i> 
+                </button>
+        
+                <div id="answer" class="form-group">
+                    <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
+                    <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
+                    <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
+                </div>
+            </form>
+            <form *ngIf="selectedType.id===2" [formGroup]="queryCitizenForm2" (ngSubmit)="onSubmit()">
+                <!-- BSN input -->
+                <div class="form-group">
+                    <label for="bsn">Citizen BSN</label>
+                    <input type="text" id="bsn" class="form-control" 
+                            formControlName="bsn"
+                            [ngClass]="{ 'is-invalid': submitted && f2.bsn.errors }">
+                    <div *ngIf="submitted && f2.bsn.errors" class="invalid-feedback">
+                        <div *ngIf="f2.bsn.errors.required">BSN is required</div>
+                    </div>
+                </div>
+                <!-- Fine amount input -->
+                <div class="form-group">
+                    <label for="money">Fine amount</label>
+                    <input type="text" id="money" class="form-control" 
+                        formControlName="money"
+                        [ngClass]="{ 'is-invalid': submitted && f2.money.errors }">
+                    <div *ngIf="submitted && f2.money.errors" class="invalid-feedback">
+                        <div *ngIf="f2.money.errors.required">Fine amount is required</div>
+                        <div *ngIf="f2.money.errors.pattern">Fine amount should be numeric</div>
+                    </div>
+                </div>
+                <!-- Number of months input -->
+                <div class="form-group">
+                    <label for="months">Number of months</label>
+                    <input type="text" id="months" class="form-control" 
+                        formControlName="months"
+                        [ngClass]="{ 'is-invalid': submitted && f2.months.errors }">
+                    <div *ngIf="submitted && f2.months.errors" class="invalid-feedback">
+                        <div *ngIf="f2.months.errors.required">Number of months is required</div>
+                        <div *ngIf="f2.months.errors.pattern">Number of months should be numeric</div>
+                    </div>  
+                </div>
+        
+                <button type="submit" class="btn btn-primary">
+                    Search 
+                    <i [hidden]="loading" class="fa fa-search"></i>
+                    <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
+                </button>
+        
+                <button style="margin-left: 5px;" type="button" class="btn btn-info">
+                    History
+                    <i class="fa fa-history" aria-hidden="true"></i> 
+                </button>
+        
+                <div id="answer" class="form-group">
+                    <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
+                    <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
+                    <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <form>
-        <div class="form-group">
-            <label style="font-weight:600;" for="queryType">Select Query type:</label>
-            <select [(ngModel)]="selectedType" name="queryType" id="queryType" class="form-control" (change)="queryTypeChanged()">
-                <option *ngFor="let item of queryTypes" [ngValue]="item">
-                    {{item.text}}
-                </option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="bsn">Citizen BSN</label>
-            <input [(ngModel)]="bsn" type="text" class="form-control" id="bsn" name="bsn" required>
-        </div>
-
-        <div *ngIf="selectedType.id===1">
-            <div class="form-group">
-                <label for="money">Fine amount</label>
-                <input [(ngModel)]="money" type="number" class="form-control" id="money" name="money" required>
-            </div>
-        </div>
-
-        <div *ngIf="selectedType.id===2">
-            <div class="form-group">
-                <label for="money">Fine amount</label>
-                <input [(ngModel)]="money" type="number" class="form-control" id="money" name="money" required>
-            </div>
-            <div class="form-group">
-                <label for="months">Number of months</label>
-                <input [(ngModel)]="months" type="text" class="form-control" id="months" name="months" required>
-            </div>
-        </div>
-
-        <div *ngIf="selectedType.id===3">
-            <div class="form-group">
-                <label for="money">Amount of money (yearly)</label>
-                <input [(ngModel)]="money" type="number" class="form-control" id="money" name="money" required>
-            </div>
-        </div>
-
-        <button type="button" class="btn btn-primary" (click)="queryCitizenAbilityToPay()">
-            Search 
-            <i [hidden]="loading" class="fa fa-search"></i>
-            <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
-        </button>
-
-        <button style="margin-left: 5px;" type="button" class="btn btn-info">
-            History
-            <i class="fa fa-history" aria-hidden="true"></i> 
-        </button>
-
-        <div id="answer" class="form-group">
-            <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
-            <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
-            <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
-        </div>
-  </form>
 </div>
