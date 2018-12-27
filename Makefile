@@ -169,7 +169,9 @@ fabric-dev-all-instantiate:
 	tmux rename-window main
 	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
 	sleep 5
-	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "INSTALL DONE" ; watch docker logs dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
+	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
+	sleep 7
+	tmux new-window -n log 'watch docker logs dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
 
 fabric-dev-all-upgrade:
 	tmux kill-window -t chaincode | true
