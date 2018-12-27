@@ -22,7 +22,7 @@ export class CitizenFormComponent implements OnInit {
         firstName: undefined,
         lastName: undefined,
         address: undefined,
-        salary: undefined,
+        financialSupport: undefined,
         consent: false,
         owner: "org.example.cjibnetwork.Municipality#" + this.mockMunicipalityId
     }
@@ -37,7 +37,7 @@ export class CitizenFormComponent implements OnInit {
             firstName: ['', Validators.required],
             lastName: ['', Validators.required],
             address: ['', [Validators.required]],
-            salary: ['', [Validators.required, Validators.pattern("^[0-9]*$")]],
+            financialSupport: ['', [Validators.required, Validators.pattern("^[0-9]*$")]],
             consent: [false, [Validators.requiredTrue]]
         });
     }
@@ -45,8 +45,6 @@ export class CitizenFormComponent implements OnInit {
     onSubmit() {
         this.submitted = true;
 
-        console.log(this.f.consent.value);
-        // stop here if form is invalid
         if (this.uploadCitizenForm.invalid) {
             return;
         } 
@@ -73,7 +71,7 @@ export class CitizenFormComponent implements OnInit {
         this.person.firstName = this.f.firstName.value;
         this.person.lastName = this.f.lastName.value;
         this.person.address = this.f.address.value;
-        this.person.salary = this.f.salary.value;
+        this.person.financialSupport = this.f.financialSupport.value;
         this.person.consent = this.f.consent.value;
 
         var body = {

@@ -69,15 +69,15 @@
                         <div *ngIf="f.address.errors.required">Address is required</div>
                     </div>
                 </div>
-                <!-- Monthly Salary input -->
+                <!-- Financial Support input -->
                 <div class="form-group">
-                    <label for="salary">Monthly Salary</label>
-                    <input type="text" id="salary" class="form-control" 
-                            formControlName="salary" 
-                            [ngClass]="{ 'is-invalid': submitted && f.salary.errors }">
-                    <div *ngIf="submitted && f.salary.errors" class="invalid-feedback">
-                        <div *ngIf="f.salary.errors.required">Monthly Salary is required</div>
-                        <div *ngIf="f.salary.errors.pattern">Monthly Salary should be numeric</div>
+                    <label for="financialSupport">Financial Support</label>
+                    <input type="text" id="financialSupport" class="form-control" 
+                            formControlName="financialSupport" 
+                            [ngClass]="{ 'is-invalid': submitted && f.financialSupport.errors }">
+                    <div *ngIf="submitted && f.financialSupport.errors" class="invalid-feedback">
+                        <div *ngIf="f.financialSupport.errors.required">Financial Support is required</div>
+                        <div *ngIf="f.financialSupport.errors.pattern">Financial Support should be numeric</div>
                     </div>
                 </div>
                 <!-- Consent checkbox -->
