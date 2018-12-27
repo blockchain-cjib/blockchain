@@ -7,6 +7,11 @@ foo@bar:~$ make clean-docker
 
 ### Development network
 
+#### Initialize configuration
+```console
+foo@bar:~$ make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network-dev
+```
+
 #### Start development network
 Leave terminal open
 ```console

@@ -36,6 +36,10 @@ fabric-init-crypto:
 		-channelID $(CHANNEL_NAME) \
 		-asOrg Org1MSP
 
+	echo "====================="
+	echo "REMEMBER TO CHANGE ca FABRIC_CA_SERVER_CA_KEYFILE in docker-compose.yml to crypto-config/peerOrganizations/org1.example.com/ca/[random stuff]_sk"
+	echo "====================="
+
 fabric-start-network:
 	cd $(FABRIC_ROOT_DIR) && \
 	docker-compose -f docker-compose.yml down | true && \
@@ -121,58 +125,61 @@ fabric-invoke-chaincode:
 		-c '{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
 
 fabric-dev-start-network:
-	cd fabric-network-devmode && \
+	cd fabric-network-dev && \
 	docker rm $(shell docker ps -a -q) | true && \
-	docker-compose -f docker-compose-simple.yaml up
+	docker-compose up
 
 fabric-dev-chaincode-connect:
-	cd fabric-network-devmode && \
+	cd fabric-network-dev && \
 	docker exec \
 		-it chaincode /bin/bash -c \
-			'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer:7052'
+			'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer0.org1.example.com:7052'
 
 fabric-dev-chaincode-install:
-	cd fabric-network-devmode && \
+	cd fabric-network-dev && \
     	docker exec \
     		-it cli /bin/bash -c \
     			'peer chaincode install -p chaincode/chaincode -n mycc -v $(CC_VERSION) -l "$(CC_LANG)"'
 
 fabric-dev-chaincode-instantiate: fabric-dev-chaincode-install
-	cd fabric-network-devmode && \
+	cd fabric-network-dev && \
     	docker exec \
     		-it cli /bin/bash -c \
-    			$$'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C myc'
+    			$$'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C mychannel --collections-config chaincode/chaincode/collections_config.json'
 
 fabric-dev-chaincode-upgrade: fabric-dev-chaincode-install
-	cd fabric-network-devmode && \
+	cd fabric-network-dev && \
     	docker exec \
     		-it cli /bin/bash -c \
-    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C myc'
+    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C mychannel'
 
 fabric-dev-chaincode-invoke:
-	cd fabric-network-devmode && \
+	cd fabric-network-dev && \
     	docker exec \
     		-it cli /bin/bash -c \
-    			$$'peer chaincode invoke -n mycc -c \'$(CC_ARGS)\' -C myc'
+    			$$'peer chaincode invoke -n mycc -c \'$(CC_ARGS)\' -C mychannel'
 
 fabric-dev-chaincode-query:
-	cd fabric-network-devmode && \
+	cd fabric-network-dev && \
 			docker exec \
 				-it cli /bin/bash -c \
-					$$'peer chaincode query -n mycc -c \'$(CC_ARGS)\' -C myc'
+					$$'peer chaincode query -n mycc -c \'$(CC_ARGS)\' -C mychannel'
 
 fabric-dev-all-instantiate:
 	tmux rename-window main
 	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
 	sleep 5
-	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "INSTALL DONE" ; sleep 9999'
+	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "INSTALL DONE" ; watch docker logs dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
 
 fabric-dev-all-upgrade:
 	tmux kill-window -t chaincode | true
 	tmux kill-window -t launch | true
+	tmux kill-window -t log | true
 	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
 	sleep 5
-	tmux new-window -n launch 'make fabric-dev-chaincode-upgrade CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE"; sleep 9999'
+	tmux new-window -n launch 'make fabric-dev-chaincode-upgrade CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
+	sleep 7
+	tmux new-window -n log 'watch docker logs dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
 
 
 start-rest:
