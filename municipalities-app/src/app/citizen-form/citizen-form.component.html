@@ -1,70 +1,107 @@
 <style>
-  .container {
+.container {
     margin: 0 auto;
-    margin-top: 130px;
-    width: 50em;
-  }
+    margin-top: 80px;
+    width: 150em;
+}
+
+#checkTxt {
+    width: 100%;
+    font-size: 80%;
+    color: #dc3545;
+}
 </style>
 
 <div class="container">
-  <form>
-    <div [hidden]="!errorAlert" class="alert alert-danger" role="alert">
-        <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        An unexpected error has occurred. Please contact the administrator.
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <form [formGroup]="uploadCitizenForm" (ngSubmit)="onSubmit()">
+                <div [hidden]="!errorAlert" class="alert alert-danger" role="alert">
+                    <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    An unexpected error has occurred. Please contact the administrator.
+                </div>
+                <div [hidden]="!successAlert" class="alert alert-success" role="alert">
+                    <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    Citizen information have been successfully uploaded.
+                </div>
+            
+                <!-- BSN input -->
+                <div class="form-group">
+                    <label for="bsn">BSN</label>
+                    <input type="text" id="bsn" class="form-control" 
+                            formControlName="bsn" 
+                            [ngClass]="{ 'is-invalid': submitted && f.bsn.errors }">
+                    <div *ngIf="submitted && f.bsn.errors" class="invalid-feedback">
+                        <div *ngIf="f.bsn.errors.required">BSN is required</div>
+                    </div>
+                </div>
+                <!-- First Name input -->
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" class="form-control" 
+                            formControlName="firstName" 
+                            [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                    <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
+                        <div *ngIf="f.firstName.errors.required">First Name is required</div>
+                    </div>
+                </div>
+                <!-- Last Name input -->
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" class="form-control" 
+                            formControlName="lastName" 
+                            [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }">
+                    <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
+                        <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+                    </div>
+                </div>
+                <!-- Address input -->
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" class="form-control" 
+                            formControlName="address" 
+                            [ngClass]="{ 'is-invalid': submitted && f.address.errors }">
+                    <div *ngIf="submitted && f.address.errors" class="invalid-feedback">
+                        <div *ngIf="f.address.errors.required">Address is required</div>
+                    </div>
+                </div>
+                <!-- Financial Support input -->
+                <div class="form-group">
+                    <label for="financialSupport">Financial Support</label>
+                    <input type="text" id="financialSupport" class="form-control" 
+                            formControlName="financialSupport" 
+                            [ngClass]="{ 'is-invalid': submitted && f.financialSupport.errors }">
+                    <div *ngIf="submitted && f.financialSupport.errors" class="invalid-feedback">
+                        <div *ngIf="f.financialSupport.errors.required">Financial Support is required</div>
+                        <div *ngIf="f.financialSupport.errors.pattern">Financial Support should be numeric</div>
+                    </div>
+                </div>
+                <!-- Consent checkbox -->
+                <div class="form-check">
+                    <input type="checkbox" id="consent" class="form-check-input" 
+                           formControlName="consent">
+                    <label class="form-check-label" for="consent">By clicking this checkbox, you agree with Hyperdebt's Terms & Conditions and provide us with consent to share
+                         your information with other municipalities.</label>
+                    <div 
+                    *ngIf="submitted && f.consent.errors" class="is-invalid">
+                        <div id="checkTxt" *ngIf="f.consent.errors.required">Consent is required</div>
+                    </div>
+                </div>
+                <!-- Browse consent form  -->
+                <div style="margin-top: 20px;" class="form-group">
+                   <input type="file" class="form-control-file" id="upload" [disabled] = "f.consent.value">
+                </div>
+            
+                <button [disabled]="loading" type="submit" class="btn btn-success">
+                    Upload
+                    <i [hidden]="loading" class="fa fa-cloud-upload"></i>
+                    <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
+                </button>
+            </form>
+        </div>
     </div>
-    <div [hidden]="!successAlert" class="alert alert-success" role="alert">
-        <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        Citizen information have been successfully uploaded.
-    </div>
-
-    <div class="form-group">
-      <label for="bsn">BSN</label>
-      <input type="text" class="form-control" id="bsn" name="bsn" [(ngModel)]="person.bsn" required>
-    </div>
-
-    <div class="form-group">
-      <label for="firstName">First Name</label>
-      <input type="text" class="form-control" id="firstName" name="firstName" [(ngModel)]="person.firstName">
-    </div>
-
-    <div class="form-group">
-      <label for="lastName">Last Name</label>
-      <input type="text" class="form-control" id="lastName" name="lastName" [(ngModel)]="person.lastName">
-    </div>
-
-    <div class="form-group">
-      <label for="address">Address</label>
-      <input type="text" class="form-control" id="address" name="address" [(ngModel)]="person.address">
-    </div>
-
-    <div class="form-group">
-      <label for="salary">Monthly Salary</label>
-      <input type="text" class="form-control" id="salary" name="salary" [(ngModel)]="person.salary">
-    </div>
-
-    <div class="form-check">
-      <input type="checkbox" class="form-check-input" id="consent" name="consent" [(ngModel)]="person.consent">
-      <label class="form-check-label" for="consent">I acknowledge that my information will be published on the blockchain</label>
-    </div>
-
-    <div style="margin-top: 20px;" class="form-group">
-      <!-- <label for="exampleFormControlFile1">Upload Consent form</label> -->
-      <div *ngIf="person.consent">
-        <input type="file" class="form-control-file" id="upload" disabled>
-      </div>
-      <div *ngIf="!person.consent">
-          <input type="file" class="form-control-file" id="upload">
-      </div>
-    </div>
-
-    <button type="submit" class="btn btn-success" (click)="uploadPersonInformation()">
-        Upload
-        <i [hidden]="loading" class="fa fa-cloud-upload"></i>
-        <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
-    </button>
-  </form>
 </div>
