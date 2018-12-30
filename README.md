@@ -109,9 +109,9 @@ Assigned the admin user to the fabric client ::{"name":"admin","mspid":"Org1MSP"
 
 #### Start server
 ```console
-foo@bar:~$ node client.js
+foo@bar:~$ node rest-client.js
 Store path:.../rest-api/hfc-key-store
-Example app listening at http://localhost:8081
+Listening at http://localhost:8081
 ```
 
 #### Invoke and Query server
@@ -133,7 +133,7 @@ X-Powered-By: Express
 
 
 ```console
-foo@bar:~$ http POST localhost:8080/api/getCitizen bsn='2' --json
+foo@bar:~$ http POST localhost:8080/api/getCitizen bsn='3' --json
 HTTP/1.1 200 OK
 Connection: keep-alive
 Content-Length: 95
