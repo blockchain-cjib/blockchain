@@ -171,7 +171,7 @@ fabric-dev-all-instantiate:
 	sleep 5
 	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
 	sleep 7
-	tmux new-window -n log 'watch docker logs -f dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
+	tmux new-window -n log 'docker logs -f dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
 
 fabric-dev-all-upgrade:
 	tmux kill-window -t chaincode | true
@@ -185,7 +185,10 @@ fabric-dev-all-upgrade:
 
 
 start-rest:
-	echo "todo"
+	cd rest-server && \
+	npm install && \
+	node enrollAdmin.js && \
+	node rest-server.js
 
 start-cjib-app:
 	echo "Start CJIB app"
