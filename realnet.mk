@@ -1,10 +1,9 @@
 FABRIC_ROOT_DIR=fabric-network
 CC_LANG=node
-CC_VERSION=$(shell date +"%y%m%d%H%M%S")
+CC_VERSION=$(shell date +"%y.%m.%d.%H%M%S")
 CC_SRC_PATH=/opt/gopath/src/github.com/chaincode
 DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
 CHANNEL_NAME=mychannel
-CC_ARGS={"Args":[""]}
 
 clean-docker:
 	docker rm $(shell docker ps -a -q) | true && \
@@ -36,9 +35,7 @@ fabric-init-crypto:
 		-channelID $(CHANNEL_NAME) \
 		-asOrg Org1MSP
 
-	echo "====================="
-	echo "REMEMBER TO CHANGE ca FABRIC_CA_SERVER_CA_KEYFILE in docker-compose.yml to crypto-config/peerOrganizations/org1.example.com/ca/[random stuff]_sk"
-	echo "====================="
+
 
 fabric-start-network:
 	cd $(FABRIC_ROOT_DIR) && \
@@ -48,6 +45,33 @@ fabric-start-network:
 
 	# Close on Control+C
 	docker-compose -f docker-compose.yml down
+
+fabric-join-peer0:
+	# Create channel
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel create \
+		-o orderer.example.com:7050 \
+		-c mychannel \
+		-f /etc/hyperledger/configtx/channel.tx \
+		| true
+
+    	# Join peer0.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel join \
+		-b mychannel.block \
+		| true 
+
+fabric-join-peer1:
+    	# Join peer1.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer1.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block 
 
 fabric-install-chaincode:
 	# Create channel
@@ -60,13 +84,41 @@ fabric-install-chaincode:
 		-f /etc/hyperledger/configtx/channel.tx \
 		| true
 
-    # Join peers to the channel.
+    	# Join peer0.org1.example.com to the channel.
 	docker exec \
 		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
 		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
 		peer0.org1.example.com peer channel join \
 		-b mychannel.block \
 		| true 
+
+    	# Join peer1.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer1.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block 
+
+    	# Join peer2.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer2.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block 
+    	
+	# Join peer3.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer3.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block 
+
+    	# Join peer4.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer4.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block 
 
 	# Install the chaincode on the peers
 	docker exec \
@@ -88,7 +140,7 @@ fabric-install-chaincode:
 		-n mycc \
 		-l "$(CC_LANG)" \
 		-v $(CC_VERSION) \
-		-c '$(CC_ARGS)'
+		-c '{"Args":[""]}'
 
 
 
@@ -107,13 +159,12 @@ fabric-upgrade-chaincode:
 		-e "CORE_PEER_MSPCONFIGPATH=$(DOCKER_CRYPTO_DIR)" \
 		cli peer chaincode upgrade \
 		-o orderer.example.com:7050 \
-		-C $(CHANNEL_NAME) \
+		-C mychannel \
 		-n mycc \
 		-l "$(CC_LANG)" \
 		-v $(CC_VERSION) \
-		-c '$(CC_ARGS)'
+		-c '{"Args":[""]}'
 
-# New citizen: {"Args":["setCitizen","123","James","Delft", "Street 5"]}
 fabric-invoke-chaincode:
 	docker exec \
 		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
@@ -125,71 +176,8 @@ fabric-invoke-chaincode:
 		--peerAddresses peer0.org1.example.com:7051 \
 		-c '{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
 
-fabric-dev-start-network:
-	cd fabric-network-dev && \
-	docker rm $(shell docker ps -a -q) | true && \
-	docker-compose up
-
-fabric-dev-chaincode-connect:
-	cd fabric-network-dev && \
-	docker exec \
-		-it chaincode /bin/bash -c \
-			'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer0.org1.example.com:7052'
-
-fabric-dev-chaincode-install:
-	cd fabric-network-dev && \
-    	docker exec \
-    		-it cli /bin/bash -c \
-    			'peer chaincode install -p chaincode/chaincode -n mycc -v $(CC_VERSION) -l "$(CC_LANG)"'
-
-fabric-dev-chaincode-instantiate: fabric-dev-chaincode-install
-	cd fabric-network-dev && \
-    	docker exec \
-    		-it cli /bin/bash -c \
-    			$$'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C mychannel --collections-config chaincode/chaincode/collections_config.json'
-
-fabric-dev-chaincode-upgrade: fabric-dev-chaincode-install
-	cd fabric-network-dev && \
-    	docker exec \
-    		-it cli /bin/bash -c \
-    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C mychannel'
-
-fabric-dev-chaincode-invoke:
-	cd fabric-network-dev && \
-    	docker exec \
-    		-it cli /bin/bash -c \
-    			$$'peer chaincode invoke -n mycc -c \'$(CC_ARGS)\' -C mychannel'
-
-fabric-dev-chaincode-query:
-	cd fabric-network-dev && \
-			docker exec \
-				-it cli /bin/bash -c \
-					$$'peer chaincode query -n mycc -c \'$(CC_ARGS)\' -C mychannel'
-
-fabric-dev-all-instantiate:
-	tmux rename-window main
-	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
-	sleep 5
-	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
-	sleep 7
-	tmux new-window -n log 'docker logs -f dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
-
-fabric-dev-all-upgrade:
-	tmux kill-window -t chaincode | true
-	tmux kill-window -t launch | true
-	tmux kill-window -t log | true
-	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
-	sleep 5
-	tmux new-window -n launch 'make fabric-dev-chaincode-upgrade CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
-	sleep 7
-	tmux new-window -n log 'docker logs -f dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
-
-
 start-rest:
-	cd rest-server && \
-	npm install && \
-	node enrollAdmin.js && \
-	node rest-server.js
+	echo "todo"
 
 start-cjib-app:
 	echo "Start CJIB app"
