@@ -2,7 +2,7 @@
 
 #### Remove and stop all previous docker images
 ```console
-foo@bar:~$ clean-docker
+foo@bar:~$ make clean-docker
 ```
 
 #### Generate crypto config (only need to run once)
