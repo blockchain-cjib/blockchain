@@ -1,10 +1,5 @@
 # Hyperdebt-network
 
-#### Remove and stop all previous docker images
-```console
-foo@bar:~$ make clean-docker
-```
-
 ### Development network
 
 #### Initialize configuration
