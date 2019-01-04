@@ -107,8 +107,8 @@ fabric-dev-all-instantiate:
 	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
 	sleep 5
 	tmux new-window -n launch 'make fabric-dev-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
-	sleep 7
-	tmux new-window -n log 'docker logs -f dev-peer0.org1.example.com-mycc-$(CC_VERSION)'
+	sleep 5
+	tmux new-window -n log './dockerlogs.sh $(CC_VERSION)'
 
 # Combo command to run multiple of above commamds at once, for quicker upgrading
 fabric-dev-all-upgrade:
