@@ -69,7 +69,7 @@ function invoke(params, next) {
             isProposalGood = true;
             console.log('Transaction proposal was good');
         } else {
-            console.error('Transaction proposal was bad');
+            throw new Error(proposalResponses[0].message);
         }
         if (isProposalGood) {
             console.log(util.format(
@@ -82,19 +82,14 @@ function invoke(params, next) {
                 proposal: proposal
             };
 
-            let promises = [];
-
             const sendPromise = channel.sendTransaction(request);
-            promises.push(sendPromise);
 
             console.log('Channel eventhub is connected: ' + channel_event_hub.isconnected());
 
             let event_monitor = new Promise((resolve, reject) => {
                 let handle = setTimeout(() => {
-                    // do the housekeeping when there is a problem
                     channel_event_hub.unregisterTxEvent(txId);
-                    console.log('Timeout - Failed to receive the transaction event ' + txId);
-                    reject(new Error('Timed out waiting for block event'));
+                    reject(new Error('Timeout - Failed to receive the transaction event with txId ' + txId));
                 }, 20000);
 
                 channel_event_hub.registerTxEvent(txId,
@@ -103,16 +98,13 @@ function invoke(params, next) {
                         resolve([status, blockNumber]);
                     },
                     (error) => {
-                        console.log('Failed to receive the transaction event ::' + error);
-                        reject(error)
+                        reject(new Error('Failed to receive the transaction event ::' + error))
                     },
                     {disconnect: true}
                 );
             });
 
-            promises.push(event_monitor);
-
-            return Promise.all(promises);
+            return Promise.all([sendPromise, event_monitor]);
         } else {
             throw new Error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
         }
@@ -122,18 +114,17 @@ function invoke(params, next) {
         if (results && results[0] && results[0].status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.');
         } else {
-            console.error('Failed to order the transaction.');
+            throw new Error('Failed to order the transaction.')
         }
         if (results && results[1] && results[1][0] === 'VALID') {
             console.log('Successfully committed the change to the ledger by the peer, with block number ' + results[1][1]);
         } else {
-            console.log('Transaction failed to be committed to the ledger due to ::' + results[1]);
+            throw new Error('Transaction failed to be committed to the ledger due to :: ' + results[1]);
         }
     }).catch((next));
 }
 
 function query(params, next) {
-    let tx_id = null;
     let member_user = null;
 
     return Fabric_Client.newDefaultKeyValueStore({
@@ -176,7 +167,7 @@ function query(params, next) {
     }).catch(next);
 }
 
-var router = express.Router();
+const router = express.Router();
 router.use(function (req, res, next) {
     console.log('Received ' + req.method + ' request at ' + req.url);
     next();
