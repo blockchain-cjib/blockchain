@@ -27,13 +27,14 @@ fabric-init-crypto:
 		-profile OneOrgChannel \
 		-outputCreateChannelTx ./config/channel.tx \
 		-channelID $(CHANNEL_NAME)
-
+commented-out:
 	# generate anchor peer transaction
 	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
 		-profile OneOrgChannel \
 		-outputAnchorPeersUpdate ./config/Org1MSPanchors.tx \
 		-channelID $(CHANNEL_NAME) \
 		-asOrg Org1MSP
+
 
 
 
@@ -46,32 +47,6 @@ fabric-start-network:
 	# Close on Control+C
 	docker-compose -f docker-compose.yml down
 
-fabric-join-peer0:
-	# Create channel
-	docker exec \
-		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
-		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
-		peer0.org1.example.com peer channel create \
-		-o orderer.example.com:7050 \
-		-c mychannel \
-		-f /etc/hyperledger/configtx/channel.tx \
-		| true
-
-    	# Join peer0.org1.example.com to the channel.
-	docker exec \
-		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
-		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
-		peer0.org1.example.com peer channel join \
-		-b mychannel.block \
-		| true 
-
-fabric-join-peer1:
-    	# Join peer1.org1.example.com to the channel.
-	docker exec \
-		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
-		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
-		-e "CORE_PEER_ADDRESS=peer1.org1.example.com:7051" \
-		peer0.org1.example.com peer channel join -b mychannel.block 
 
 fabric-install-chaincode:
 	# Create channel
@@ -184,6 +159,33 @@ start-cjib-app:
 
 start-municipalities-app:
 	echo "Start Municipality app"
+
+fabric-join-peer0:
+	# Create channel
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel create \
+		-o orderer.example.com:7050 \
+		-c mychannel \
+		-f /etc/hyperledger/configtx/channel.tx \
+		| true
+
+    	# Join peer0.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel join \
+		-b mychannel.block \
+		| true 
+
+fabric-join-peer1:
+    	# Join peer1.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer1.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block 
 
 #create-card:
 #	cd fabric-composer-project && \
