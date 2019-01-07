@@ -8,7 +8,7 @@ set -e
 
 # We use a pre-generated orderer.block and channel transaction artifact (myc.tx),
 # both of which are created using the configtxgen tool
-
+sleep 15
 # first we create the channel against the specified configuration in myc.tx
 # this call returns a channel configuration block - myc.block - to the CLI container
 peer channel create -c mychannel -f mychannel.block -o orderer.example.com:7050 -f config/channel.tx
