@@ -8,6 +8,8 @@ node_modules
 
 **.block
 
+hfc-key-store
+
 fabric-network-dev/config/*
 fabric-network-dev/crypto-config/*
 fabric-network/config/*
