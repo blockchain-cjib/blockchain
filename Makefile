@@ -87,10 +87,15 @@ start-rest:
 
 start-cjib-app:
 	echo "Start CJIB app"
+	cd cjib-app && \
+	npm install && \
+	npm start
 
 start-municipalities-app:
 	echo "Start Municipality app"
-
+	cd municipalities-app && \
+	npm install && \
+	npm start
 ##
 ## START DEVELOPMENT NETWORK SPECIFIC COMANDS
 ##
