@@ -38,6 +38,8 @@ fabric-init-crypto:
 		-outputAnchorPeersUpdate ./config/Org1MSPanchors.tx \
 		-channelID $(CHANNEL_NAME) \
 		-asOrg Org1MSP
+	#change FABRIC_CA_SERVER_CA_KEYFILE
+	python editFiles.py
 
 	echo "====================="
 	echo "REMEMBER TO CHANGE ca FABRIC_CA_SERVER_CA_KEYFILE in docker-compose.yml to crypto-config/peerOrganizations/org1.example.com/ca/[random stuff]_sk"
