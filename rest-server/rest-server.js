@@ -17,6 +17,8 @@ channel.addPeer(peer);
 const order = fabric_client.newOrderer('grpc://localhost:7050');
 channel.addOrderer(order);
 
+const channel_event_hub = channel.newChannelEventHub(peer.getName());
+
 const store_path = path.join(__dirname, 'hfc-key-store');
 console.log('Store path:' + store_path);
 
@@ -42,6 +44,7 @@ function invoke(params, next) {
         if (user_from_store && user_from_store.isEnrolled()) {
             console.log('Successfully loaded admin from persistence');
             member_user = user_from_store;
+            channel_event_hub.connect();
         } else {
             throw new Error('Failed to get admin.... run registerAdmin.js');
         }
@@ -53,17 +56,20 @@ function invoke(params, next) {
         params.txId = tx_id;
 
         // send the transaction proposal to the peers
-        return channel.sendTransactionProposal(params);
+        return Promise.all([channel.sendTransactionProposal(params), tx_id._transaction_id]);
     }).then((results) => {
-        const proposalResponses = results[0];
-        const proposal = results[1];
+        const proposalResponses = results[0][0];
+        const proposal = results[0][1];
+        const txId = results[1];
+
         let isProposalGood = false;
+
         if (proposalResponses && proposalResponses[0].response &&
             proposalResponses[0].response.status === 200) {
             isProposalGood = true;
             console.log('Transaction proposal was good');
         } else {
-            console.error('Transaction proposal was bad');
+            throw new Error(proposalResponses[0].message);
         }
         if (isProposalGood) {
             console.log(util.format(
@@ -71,23 +77,34 @@ function invoke(params, next) {
                 proposalResponses[0].response.status, proposalResponses[0].response.message));
 
             // build up the request for the orderer to have the transaction committed
-            var request = {
+            const request = {
                 proposalResponses: proposalResponses,
                 proposal: proposal
             };
 
-            // set the transaction listener and set a timeout of 30 sec
-            // if the transaction did not get committed within the timeout period,
-            // report a TIMEOUT status
-            const transaction_id_string = tx_id.getTransactionID(); //Get the transaction ID string to be used by the event processing
-            let promises = [];
-
             const sendPromise = channel.sendTransaction(request);
-            promises.push(sendPromise); //we want the send transaction first, so that we know where to check status
 
-            // TODO implement channel eventhub
+            console.log('Channel eventhub is connected: ' + channel_event_hub.isconnected());
 
-            return Promise.all(promises);
+            let event_monitor = new Promise((resolve, reject) => {
+                let handle = setTimeout(() => {
+                    channel_event_hub.unregisterTxEvent(txId);
+                    reject(new Error('Timeout - Failed to receive the transaction event with txId ' + txId));
+                }, 20000);
+
+                channel_event_hub.registerTxEvent(txId,
+                    (trasactionId, status, blockNumber) => {
+                        clearTimeout(handle);
+                        resolve([status, blockNumber]);
+                    },
+                    (error) => {
+                        reject(new Error('Failed to receive the transaction event ::' + error))
+                    },
+                    {disconnect: true}
+                );
+            });
+
+            return Promise.all([sendPromise, event_monitor]);
         } else {
             throw new Error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
         }
@@ -97,21 +114,17 @@ function invoke(params, next) {
         if (results && results[0] && results[0].status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.');
         } else {
-            console.error('Failed to order the transaction. Error code: ' + response.status);
+            throw new Error('Failed to order the transaction.')
         }
-
-        // if (results && results[1] && results[1].event_status === 'VALID') {
-        if (results) {
-            console.log('Successfully committed the change to the ledger by the peer');
+        if (results && results[1] && results[1][0] === 'VALID') {
+            console.log('Successfully committed the change to the ledger by the peer, with block number ' + results[1][1]);
         } else {
-            // console.log('Transaction failed to be committed to the ledger due to ::' + results[1].event_status);
-            console.log('Transaction failed to be committed to the ledger due to ::' + results[1]);
+            throw new Error('Transaction failed to be committed to the ledger due to :: ' + results[1]);
         }
     }).catch((next));
 }
 
 function query(params, next) {
-    let tx_id = null;
     let member_user = null;
 
     return Fabric_Client.newDefaultKeyValueStore({
@@ -154,7 +167,7 @@ function query(params, next) {
     }).catch(next);
 }
 
-var router = express.Router();
+const router = express.Router();
 router.use(function (req, res, next) {
     console.log('Received ' + req.method + ' request at ' + req.url);
     next();
