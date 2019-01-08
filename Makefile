@@ -10,34 +10,47 @@ DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peer
 CHANNEL_NAME=mychannel
 CC_ARGS={"Args":[""]}
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	BIN_DIR=./fabric-bin/linux
+endif
+ifeq ($(UNAME_S),Darwin)
+	BIN_DIR=./fabric-bin/darwin
+endif
+
 # Creates crypto stuff, only has to be run once
 fabric-init-crypto:
-
 	# Remove all previously generated material
 	rm -fr $(FABRIC_ROOT_DIR)/config/*
 	rm -fr $(FABRIC_ROOT_DIR)/crypto-config/*
 
 	# Generate crypto material from the crypto config file
-	cd $(FABRIC_ROOT_DIR) && ./bin/cryptogen generate \
-		--config=./crypto-config.yaml
+	$(BIN_DIR)/cryptogen generate \
+		--config=./$(FABRIC_ROOT_DIR)/crypto-config.yaml \
+		--output=./$(FABRIC_ROOT_DIR)/crypto-config
 
 	# Generate genesis block for orderer
-	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+	$(BIN_DIR)/configtxgen \
+		-configPath ./$(FABRIC_ROOT_DIR) \
 		-profile OneOrgOrdererGenesis \
-		-outputBlock ./config/genesis.block
+		-outputBlock ./$(FABRIC_ROOT_DIR)/config/genesis.block
 
 	# Generate channel configuration transaction
-	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+	$(BIN_DIR)/configtxgen \
+		-configPath ./$(FABRIC_ROOT_DIR) \
 		-profile OneOrgChannel \
-		-outputCreateChannelTx ./config/channel.tx \
+		-outputCreateChannelTx ./$(FABRIC_ROOT_DIR)/config/channel.tx \
 		-channelID $(CHANNEL_NAME)
 
 	# Generate anchor peer transaction
-	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+	$(BIN_DIR)/configtxgen \
+		-configPath ./$(FABRIC_ROOT_DIR) \
 		-profile OneOrgChannel \
-		-outputAnchorPeersUpdate ./config/Org1MSPanchors.tx \
+		-outputAnchorPeersUpdate ./$(FABRIC_ROOT_DIR)/config/Org1MSPanchors.tx \
 		-channelID $(CHANNEL_NAME) \
 		-asOrg Org1MSP
+	#change FABRIC_CA_SERVER_CA_KEYFILE
+	python editFiles.py
 
 	echo "====================="
 	echo "REMEMBER TO CHANGE ca FABRIC_CA_SERVER_CA_KEYFILE in docker-compose.yml to crypto-config/peerOrganizations/org1.example.com/ca/[random stuff]_sk"
@@ -120,6 +133,22 @@ fabric-dev-all-upgrade:
 	tmux new-window -n launch 'make fabric-dev-chaincode-upgrade CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
 	sleep 5
 	tmux new-window -n log './dockerlogs.sh $(CC_VERSION)'
+
+query-specific-block:
+	@read -p "Enter block-number:" block-number; \
+	'Fetching block...';\
+	peer channel fetch $$block-number
+
+query-newest-block:
+	cd fabric-network-dev && \
+    	docker exec \
+    		-it cli /bin/bash -c \
+	'Fetching newest block...';\
+	peer channel fetch newest mychannel.block -c mychannel --orderer orderer.example.com:7050
+
+query-oldest-block:
+	'Fetching oldest block...';\
+	peer channel fetch oldest
 
 # Start the rest server to interact with the blockchain network
 start-rest:
