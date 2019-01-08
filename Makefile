@@ -123,6 +123,22 @@ fabric-dev-all-upgrade:
 	sleep 5
 	tmux new-window -n log './dockerlogs.sh $(CC_VERSION)'
 
+query-specific-block:
+	@read -p "Enter block-number:" block-number; \
+	'Fetching block...';\
+	peer channel fetch $$block-number
+
+query-newest-block:
+	cd fabric-network-dev && \
+    	docker exec \
+    		-it cli /bin/bash -c \
+	'Fetching newest block...';\
+	peer channel fetch newest mychannel.block -c mychannel --orderer orderer.example.com:7050
+
+query-oldest-block:
+	'Fetching oldest block...';\
+	peer channel fetch oldest
+
 # Start the rest server to interact with the blockchain network
 start-rest:
 	cd rest-server && \
