@@ -107,7 +107,7 @@ X-Powered-By: Express
 
 
 ```console
-foo@bar:~$ http POST localhost:8080/api/getCitizen bsn='3' --json
+foo@bar:~$ http GET localhost:8080/api/getCitizen?bsn=3
 HTTP/1.1 200 OK
 Connection: keep-alive
 Content-Length: 95
@@ -117,10 +117,10 @@ ETag: W/"5f-i6rnL/mRxMJYbCoyuBiOXgE8y+M"
 X-Powered-By: Express
 
 {
-    "addressCity": "Delft",
-    "addressStreet": "Street 5",
-    "bsn": "2",
-    "docType": "citizen",
+    "addressCity": "Delft", 
+    "addressStreet": "Street 5", 
+    "bsn": "3", 
+    "docType": "citizen", 
     "name": "James"
 }
 ```
