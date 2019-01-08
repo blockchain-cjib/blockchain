@@ -9,13 +9,13 @@ foo@bar:~$ make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network
 
 #### Initialize configuration
 ```console
-foo@bar:~$ make fabric-init-crypto
+foo@bar:~$ make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network-dev
 ```
 
 #### Start development network
 Leave terminal open
 ```console
-foo@bar:~$ make fabric-dev-start-network
+foo@bar:~$ make fabric-start-network FABRIC_ROOT_DIR=fabric-network-dev
 ```
 
 #### Installing and upgrading chaincode on the network
@@ -53,24 +53,26 @@ the second (tmux) terminal.
 
 #### Invoke chaincode on the network
 ```console
-foo@bar:~$ make fabric-dev-chaincode-invoke
+foo@bar:~$ make fabric-chaincode-invoke
 ```
 
 Invoke with custom arguments:
 ```console
-foo@bar:~$ make fabric-dev-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
 ```
 
 #### Query chaincode on the network
 ```console
-foo@bar:~$ make fabric-dev-chaincode-query
+foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123"]}'
 ```
 
 ### REST-API server
+All in one:
 ```console
-foo@bar:~$ cd rest-api && npm install
+foo@bar:~$ make start-rest-server
 ```
 
+Step by step:
 #### Create admin
 ```console
 foo@bar:~$ node enrollAdmin.js

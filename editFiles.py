@@ -13,9 +13,9 @@ if __name__ == '__main__':
 
     filename = next(file for file in files if file.endswith('_sk'))
 
-    with open("fabric-network-dev/docker-compose.yml", "r") as file:
+    with open(Path(args.network) / 'docker-compose.yml', 'r') as file:
         data = file.readlines()
 
-    data[17] = "      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/" + filename + "\n"
-    with open("fabric-network-dev/docker-compose.yml", "w") as file:
+    data[17] = '      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/' + filename + '\n'
+    with open(Path(args.network) / 'docker-compose.yml', 'w') as file:
         file.writelines(data)
