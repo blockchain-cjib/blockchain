@@ -10,32 +10,43 @@ DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peer
 CHANNEL_NAME=mychannel
 CC_ARGS={"Args":[""]}
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	BIN_DIR=./fabric-bin/linux
+endif
+ifeq ($(UNAME_S),Darwin)
+	BIN_DIR=./fabric-bin/darwin
+endif
+
 # Creates crypto stuff, only has to be run once
 fabric-init-crypto:
-
 	# Remove all previously generated material
 	rm -fr $(FABRIC_ROOT_DIR)/config/*
 	rm -fr $(FABRIC_ROOT_DIR)/crypto-config/*
 
 	# Generate crypto material from the crypto config file
-	cd $(FABRIC_ROOT_DIR) && ./bin/cryptogen generate \
-		--config=./crypto-config.yaml
+	$(BIN_DIR)/cryptogen generate \
+		--config=./$(FABRIC_ROOT_DIR)/crypto-config.yaml \
+		--output=./$(FABRIC_ROOT_DIR)/crypto-config
 
 	# Generate genesis block for orderer
-	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+	$(BIN_DIR)/configtxgen \
+		-configPath ./$(FABRIC_ROOT_DIR) \
 		-profile OneOrgOrdererGenesis \
-		-outputBlock ./config/genesis.block
+		-outputBlock ./$(FABRIC_ROOT_DIR)/config/genesis.block
 
 	# Generate channel configuration transaction
-	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+	$(BIN_DIR)/configtxgen \
+		-configPath ./$(FABRIC_ROOT_DIR) \
 		-profile OneOrgChannel \
-		-outputCreateChannelTx ./config/channel.tx \
+		-outputCreateChannelTx ./$(FABRIC_ROOT_DIR)/config/channel.tx \
 		-channelID $(CHANNEL_NAME)
 
 	# Generate anchor peer transaction
-	cd $(FABRIC_ROOT_DIR) && ./bin/configtxgen \
+	$(BIN_DIR)/configtxgen \
+		-configPath ./$(FABRIC_ROOT_DIR) \
 		-profile OneOrgChannel \
-		-outputAnchorPeersUpdate ./config/Org1MSPanchors.tx \
+		-outputAnchorPeersUpdate ./$(FABRIC_ROOT_DIR)/config/Org1MSPanchors.tx \
 		-channelID $(CHANNEL_NAME) \
 		-asOrg Org1MSP
 
