@@ -1,6 +1,11 @@
 # Hyperdebt-network
 
-### Development network
+#### Switch between development and real network
+Switching is done by setting the make parameter `FABRIC_ROOT_DIR`
+to either `fabric-network-dev` or `fabric-network`. So for example:
+```console
+foo@bar:~$ make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network
+```
 
 #### Initialize configuration
 ```console

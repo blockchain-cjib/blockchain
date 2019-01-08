@@ -57,11 +57,43 @@ fabric-init-crypto:
 	echo "====================="
 
 # Start the whole blockchain network
-fabric-dev-start-network:
-	cd fabric-network-dev && \
+fabric-start-network:
+	cd $(FABRIC_ROOT_DIR) && \
 	docker rm $(shell docker ps -a -q) | true && \
 	docker-compose up
 
+query-specific-block:
+	@read -p "Enter block-number:" block-number; \
+	'Fetching block...';\
+	peer channel fetch $$block-number
+
+query-newest-block:
+	cd fabric-network-dev && \
+    	docker exec \
+    		-it cli /bin/bash -c \
+	'Fetching newest block...';\
+	peer channel fetch newest mychannel.block -c mychannel --orderer orderer.example.com:7050
+
+query-oldest-block:
+	'Fetching oldest block...';\
+	peer channel fetch oldest
+
+# Start the rest server to interact with the blockchain network
+start-rest:
+	cd rest-server && \
+	npm install && \
+	node enrollAdmin.js && \
+	node rest-server.js
+
+start-cjib-app:
+	echo "Start CJIB app"
+
+start-municipalities-app:
+	echo "Start Municipality app"
+
+##
+## START DEVELOPMENT NETWORK SPECIFIC COMANDS
+##
 # Not completely sure what it does but it is nececary when you run the network in development mode
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate'
 fabric-dev-chaincode-connect:
@@ -134,32 +166,110 @@ fabric-dev-all-upgrade:
 	sleep 5
 	tmux new-window -n log './dockerlogs.sh $(CC_VERSION)'
 
-query-specific-block:
-	@read -p "Enter block-number:" block-number; \
-	'Fetching block...';\
-	peer channel fetch $$block-number
+##
+## FINISH DEVELOPMENT NETWORK SPECIFIC COMMANDS
+##
 
-query-newest-block:
-	cd fabric-network-dev && \
-    	docker exec \
-    		-it cli /bin/bash -c \
-	'Fetching newest block...';\
-	peer channel fetch newest mychannel.block -c mychannel --orderer orderer.example.com:7050
+##
+## START REAL NETWORK SPECIFIC COMMANDS
+##
+fabric-install-chaincode:
+	# Create channel
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel create \
+		-o orderer.example.com:7050 \
+		-c mychannel \
+		-f /etc/hyperledger/configtx/channel.tx \
+		| true
 
-query-oldest-block:
-	'Fetching oldest block...';\
-	peer channel fetch oldest
+    	# Join peer0.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel join \
+		-b mychannel.block \
+		| true
 
-# Start the rest server to interact with the blockchain network
-start-rest:
-	cd rest-server && \
-	npm install && \
-	node enrollAdmin.js && \
-	node rest-server.js
+    	# Join peer1.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer1.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block
 
-start-cjib-app:
-	echo "Start CJIB app"
+    	# Join peer2.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer2.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block
 
-start-municipalities-app:
-	echo "Start Municipality app"
+	# Join peer3.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer3.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block
+
+    	# Join peer4.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer4.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block
+
+	# Install the chaincode on the peers
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=$(DOCKER_CRYPTO_DIR)" \
+		cli peer chaincode install \
+		-n mycc \
+		-v $(CC_VERSION)  \
+		-p "$(CC_SRC_PATH)" \
+		-l "$(CC_LANG)"
+
+	# Instantiate chaincode
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=$(DOCKER_CRYPTO_DIR)" \
+		cli peer chaincode instantiate \
+		-o orderer.example.com:7050 \
+		-C mychannel \
+		-n mycc \
+		-l "$(CC_LANG)" \
+		-v $(CC_VERSION) \
+		-c '{"Args":[""]}'
+
+
+fabric-join-peer0:
+	# Create channel
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel create \
+		-o orderer.example.com:7050 \
+		-c mychannel \
+		-f /etc/hyperledger/configtx/channel.tx \
+		| true
+
+    	# Join peer0.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		peer0.org1.example.com peer channel join \
+		-b mychannel.block \
+		| true
+
+fabric-join-peer1:
+    	# Join peer1.org1.example.com to the channel.
+	docker exec \
+		-e "CORE_PEER_LOCALMSPID=Org1MSP" \
+		-e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" \
+		-e "CORE_PEER_ADDRESS=peer1.org1.example.com:7051" \
+		peer0.org1.example.com peer channel join -b mychannel.block
+##
+## FINISH REAL NETWORK SPECIFIC COMMANDS
+##
 
