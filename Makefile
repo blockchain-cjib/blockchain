@@ -79,7 +79,7 @@ fabric-dev-chaincode-upgrade: fabric-dev-chaincode-install
 	cd fabric-network-dev && \
     	docker exec \
     		-it cli /bin/bash -c \
-    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C mychannel'
+    			$$'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c \'$(CC_ARGS)\' -C mychannel  --collections-config chaincode/chaincode/collections_config.json'
 
 # Invoke something on the chaincode, invoking is done to put some information on the blockchain
 #
