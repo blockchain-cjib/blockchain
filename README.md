@@ -69,7 +69,7 @@ foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123"]}'
 ### REST-API server
 All in one:
 ```console
-foo@bar:~$ make start-rest-server
+foo@bar:~$ make start-rest
 ```
 
 Step by step:
