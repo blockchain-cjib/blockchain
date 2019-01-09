@@ -14,3 +14,5 @@ fabric-network-dev/config/*
 fabric-network-dev/crypto-config/*
 fabric-network/config/*
 fabric-network/crypto-config/*
+
+.env
