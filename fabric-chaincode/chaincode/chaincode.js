@@ -26,11 +26,11 @@ var Chaincode = class {
 
         if (!method) {
             console.log('no method of name:' + ret.fcn + ' found');
-            return shim.success();
+            return shim.success(); 
         }
 
         try {
-            let payload = await method(stub, ret.params);
+            let payload = await method(stub, ret.params, this);
             return shim.success(payload);
         } catch (err) {
             console.log(err);
@@ -79,6 +79,7 @@ var Chaincode = class {
         citizen.addressStreet = addressStreet;
 
         // Store citizen
+        //await stub.putState(bsn, Buffer.from(JSON.stringify(citizen)), {privateCollection: 'citizenCollection'});
         await stub.putState(bsn, Buffer.from(JSON.stringify(citizen)));
         console.info(JSON.stringify(citizen));
     }
@@ -89,22 +90,68 @@ var Chaincode = class {
         }
 
         let bsn = args[0];
-        if (args[0].lenth <= 0) {
+        if (args[0].length <= 0) {
             throw new Error('1st argument (BSN) must be a non-empty string');
         }
 
+        //let citizen = await stub.getState(bsn, {privateCollection: 'citizenCollection'});
         let citizen = await stub.getState(bsn);
-        if (!citizen) {
+        if (citizen.toString() == []) {
             throw new Error('Citizen with this BSN does not exist');
         }
 
         console.info(citizen.toString());
-        return citizen
+        return citizen;
     }
 
     async deleteCitizen(stub, args) {
+        if (args.length != 1) {
+          throw new Error('Incorrect number of arguments. Expecting 1');
+        }
+        let bsn = args[0];
+        if (args[0].length <= 0) {
+            throw new Error('1st argument (BSN) must be a non-empty string');
+        }
 
+        //let citizen = await stub.getState(bsn, {privateCollection: 'citizenCollection'});
+        let citizen = await stub.getState(bsn);
+        if (citizen.toString() == []) {
+                throw new Error('Citizen with this BSN does not exist');
+            }
+
+
+        //await stub.deletePrivateData('citizenCollection', bsn)
+        await stub.deleteState(bsn); //remove the citizen from chaincode state
+        console.info("citizen deleted with bsn number: " + bsn);
     }
+
+    async updateCitizen(stub, args) {
+        if (args.length != 2) {
+            throw new Error('Incorrect number of arguments. Expecting 2');
+        }
+
+        let bsn = args[0];
+        if (args[0].length <= 0) {
+            throw new Error('1st argument (BSN) must be a non-empty string');
+        }
+
+        //let citizen = await stub.getState(bsn, {privateCollection: 'citizenCollection'});
+        let citizenAsBytes = await stub.getState(bsn);
+        if (citizenAsBytes.toString() == []) {
+            throw new Error('Citizen with this BSN does not exist');
+        }
+
+        let newName = args[1];
+        console.info('start updateCitizen ', bsn, newName);
+
+        let citizenToUpdate = {};
+        citizenToUpdate = JSON.parse(citizenAsBytes.toString()); //unmarshal
+        citizenToUpdate.name = newName; //change the name
+        await stub.putState(bsn, Buffer.from(JSON.stringify(citizenToUpdate))); //rewrite the marble
+
+        console.info("Citizen updated");
+        console.info(citizenToUpdate);
+      }
 };
 
 shim.start(new Chaincode());
