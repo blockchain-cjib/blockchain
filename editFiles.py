@@ -17,9 +17,5 @@ if __name__ == '__main__':
 
     filename = next(file for file in files if file.endswith('_sk'))
 
-    with open(str(Path(args.network) / 'docker-compose.yml'), 'r') as file:
-        data = file.readlines()
-
-    data[17] = '      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/' + filename + '\n'
-    with open(str(Path(args.network) / 'docker-compose.yml'), 'w') as file:
-        file.writelines(data)
+    with open(str(Path(args.network) / '.env'), 'w') as f:
+        f.write('CA_SK={}'.format(filename))
