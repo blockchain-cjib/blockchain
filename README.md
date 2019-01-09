@@ -1,16 +1,21 @@
 # Hyperdebt-network
 
-### Development network
+#### Switch between development and real network
+Switching is done by setting the make parameter `FABRIC_ROOT_DIR`
+to either `fabric-network-dev` or `fabric-network`. So for example:
+```console
+foo@bar:~$ make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network
+```
 
 #### Initialize configuration
 ```console
-foo@bar:~$ make fabric-init-crypto
+foo@bar:~$ make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network-dev
 ```
 
 #### Start development network
 Leave terminal open
 ```console
-foo@bar:~$ make fabric-dev-start-network
+foo@bar:~$ make fabric-start-network FABRIC_ROOT_DIR=fabric-network-dev
 ```
 
 #### Installing and upgrading chaincode on the network
@@ -48,24 +53,57 @@ the second (tmux) terminal.
 
 #### Invoke chaincode on the network
 ```console
-foo@bar:~$ make fabric-dev-chaincode-invoke
+foo@bar:~$ make fabric-chaincode-invoke
 ```
 
 Invoke with custom arguments:
+
+To add a new citizen: 
 ```console
-foo@bar:~$ make fabric-dev-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5", "yes"]}'
 ```
+To delete an existing citizen:
+```console
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen","123"]}'
+```
+To update financial support information of an existing citizen:
+```console
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123", "no"]}'
+```
+
 
 #### Query chaincode on the network
 ```console
-foo@bar:~$ make fabric-dev-chaincode-query
+foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123"]}'
+```
+
+#### Query actual blocks on the blockchain
+The following command retrieves the block with specified blocknumber *a* (the *n*th block
+added to the blockchain has blocknumber *n*-1):
+
+```console
+foo@bar:~$ make query-specific-block *a*
+```
+
+To retrieve the latest block added:
+
+```console
+foo@bar:~$ make query-latest-block
+```
+
+To retrieve the newest block added:
+
+```console
+foo@bar:~$ make query-newest-block
 ```
 
 ### REST-API server
+All in one:
 ```console
-foo@bar:~$ cd rest-api && npm install
+foo@bar:~$ make start-rest
 ```
 
+Step by step:
 #### Create admin
 ```console
 foo@bar:~$ node enrollAdmin.js
@@ -100,7 +138,7 @@ X-Powered-By: Express
 
 
 ```console
-foo@bar:~$ http POST localhost:8080/api/getCitizen bsn='3' --json
+foo@bar:~$ http GET localhost:8080/api/getCitizen?bsn=3
 HTTP/1.1 200 OK
 Connection: keep-alive
 Content-Length: 95
@@ -110,10 +148,10 @@ ETag: W/"5f-i6rnL/mRxMJYbCoyuBiOXgE8y+M"
 X-Powered-By: Express
 
 {
-    "addressCity": "Delft",
-    "addressStreet": "Street 5",
-    "bsn": "2",
-    "docType": "citizen",
+    "addressCity": "Delft", 
+    "addressStreet": "Street 5", 
+    "bsn": "3", 
+    "docType": "citizen", 
     "name": "James"
 }
 ```
