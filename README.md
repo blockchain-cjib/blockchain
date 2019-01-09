@@ -57,9 +57,20 @@ foo@bar:~$ make fabric-chaincode-invoke
 ```
 
 Invoke with custom arguments:
+
+To add a new citizen: 
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5", "yes"]}'
 ```
+To delete an existing citizen:
+```console
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen","123"]}'
+```
+To update financial support information of an existing citizen:
+```console
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123", "no"]}'
+```
+
 
 #### Query chaincode on the network
 ```console
