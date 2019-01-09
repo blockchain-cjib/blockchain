@@ -9,6 +9,7 @@ CC_SRC_PATH=/opt/gopath/src/github.com/chaincode
 DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
 CHANNEL_NAME=mychannel
 CC_ARGS={"Args":[""]}
+BLOCK_NUMBER=0
 
 # Creates crypto stuff, only has to be run once
 fabric-init-crypto:
@@ -124,20 +125,37 @@ fabric-dev-all-upgrade:
 	tmux new-window -n log './dockerlogs.sh $(CC_VERSION)'
 
 query-specific-block:
-	@read -p "Enter block-number:" block-number; \
-	'Fetching block...';\
-	peer channel fetch $$block-number
+	cd fabric-network-dev && \
+		docker exec \
+			-it cli /bin/bash -c \
+				'peer channel fetch $(BLOCK_NUMBER) block$(BLOCK_NUMBER).block -c mychannel --orderer orderer.example.com:7050'
+	mv fabric-network-dev/block$(BLOCK_NUMBER).block fabric-network-dev/bin/block$(BLOCK_NUMBER).block
+	cd fabric-network-dev/bin && \
+	configtxlator proto_decode --type=common.Block --input=block$(BLOCK_NUMBER).block |  jq '.' > block$(BLOCK_NUMBER).json && \
+	rm block$(BLOCK_NUMBER).block && \
+	mv block$(BLOCK_NUMBER).json blocks/block$(BLOCK_NUMBER).json
 
 query-newest-block:
 	cd fabric-network-dev && \
-    	docker exec \
-    		-it cli /bin/bash -c \
-	'Fetching newest block...';\
-	peer channel fetch newest mychannel.block -c mychannel --orderer orderer.example.com:7050
+		docker exec \
+			-it cli /bin/bash -c \
+				'peer channel fetch newest newest.block -c mychannel --orderer orderer.example.com:7050'
+	mv fabric-network-dev/newest.block fabric-network-dev/bin/newest.block
+	cd fabric-network-dev/bin && \
+	configtxlator proto_decode --type=common.Block --input=newest.block |  jq '.' > newestBlock.json && \
+	rm newest.block && \
+	mv newestBlock.json blocks/newestBlock.json
 
 query-oldest-block:
-	'Fetching oldest block...';\
-	peer channel fetch oldest
+	cd fabric-network-dev && \
+		docker exec \
+			-it cli /bin/bash -c \
+				'peer channel fetch oldest oldest.block -c mychannel --orderer orderer.example.com:7050'
+	mv fabric-network-dev/oldest.block fabric-network-dev/bin/oldest.block
+	cd fabric-network-dev/bin && \
+	configtxlator proto_decode --type=common.Block --input=oldest.block |  jq '.' > oldestBlock.json && \
+	rm oldest.block && \
+	mv oldestBlock.json blocks/oldestBlock.json
 
 # Start the rest server to interact with the blockchain network
 start-rest:
