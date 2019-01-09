@@ -60,40 +60,6 @@ fabric-start-network:
 	docker rm $(shell docker ps -a -q) | true && \
 	docker-compose up
 
-query-specific-block:
-	@read -p "Enter block-number:" block-number; \
-	'Fetching block...';\
-	peer channel fetch $$block-number
-
-query-newest-block:
-	cd fabric-network-dev && \
-    	docker exec \
-    		-it cli /bin/bash -c \
-	'Fetching newest block...';\
-	peer channel fetch newest mychannel.block -c mychannel --orderer orderer.example.com:7050
-
-query-oldest-block:
-	'Fetching oldest block...';\
-	peer channel fetch oldest
-
-# Start the rest server to interact with the blockchain network
-start-rest:
-	cd rest-server && \
-	npm install && \
-	node enrollAdmin.js && \
-	node rest-server.js
-
-start-cjib-app:
-	echo "Start CJIB app"
-	cd cjib-app && \
-	npm install && \
-	npm start
-
-start-municipalities-app:
-	echo "Start Municipality app"
-	cd municipalities-app && \
-	npm install && \
-	npm start
 
 # Not completely sure what it does but it is nececary when you run the network in development mode
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate'
@@ -168,33 +134,33 @@ query-specific-block:
 		docker exec \
 			-it cli /bin/bash -c \
 				'peer channel fetch $(BLOCK_NUMBER) block$(BLOCK_NUMBER).block -c mychannel --orderer orderer.example.com:7050'
-	mv fabric-network-dev/block$(BLOCK_NUMBER).block fabric-network-dev/bin/block$(BLOCK_NUMBER).block
+	mv -f fabric-network-dev/block$(BLOCK_NUMBER).block fabric-network-dev/bin/block$(BLOCK_NUMBER).block
 	cd fabric-network-dev/bin && \
 	configtxlator proto_decode --type=common.Block --input=block$(BLOCK_NUMBER).block |  jq '.' > block$(BLOCK_NUMBER).json && \
-	rm block$(BLOCK_NUMBER).block && \
-	mv block$(BLOCK_NUMBER).json blocks/block$(BLOCK_NUMBER).json
+	rm -f block$(BLOCK_NUMBER).block && \
+	mv -f block$(BLOCK_NUMBER).json blocks/block$(BLOCK_NUMBER).json
 
 query-newest-block:
 	cd fabric-network-dev && \
 		docker exec \
 			-it cli /bin/bash -c \
 				'peer channel fetch newest newest.block -c mychannel --orderer orderer.example.com:7050'
-	mv fabric-network-dev/newest.block fabric-network-dev/bin/newest.block
+	mv -f fabric-network-dev/newest.block fabric-network-dev/bin/newest.block
 	cd fabric-network-dev/bin && \
 	configtxlator proto_decode --type=common.Block --input=newest.block |  jq '.' > newestBlock.json && \
-	rm newest.block && \
-	mv newestBlock.json blocks/newestBlock.json
+	rm -f newest.block && \
+	mv -f newestBlock.json blocks/newestBlock.json
 
 query-oldest-block:
 	cd fabric-network-dev && \
 		docker exec \
 			-it cli /bin/bash -c \
 				'peer channel fetch oldest oldest.block -c mychannel --orderer orderer.example.com:7050'
-	mv fabric-network-dev/oldest.block fabric-network-dev/bin/oldest.block
+	mv -f fabric-network-dev/oldest.block fabric-network-dev/bin/oldest.block
 	cd fabric-network-dev/bin && \
 	configtxlator proto_decode --type=common.Block --input=oldest.block |  jq '.' > oldestBlock.json && \
-	rm oldest.block && \
-	mv oldestBlock.json blocks/oldestBlock.json
+	rm -f oldest.block && \
+	mv -f oldestBlock.json blocks/oldestBlock.json
 
 # Start the rest server to interact with the blockchain network
 start-rest:
@@ -205,8 +171,14 @@ start-rest:
 
 start-cjib-app:
 	echo "Start CJIB app"
+	cd cjib-app && \
+	npm install && \
+	npm start
 
 start-municipalities-app:
 	echo "Start Municipality app"
+	cd municipalities-app && \
+	npm install && \
+	npm start
 
 
