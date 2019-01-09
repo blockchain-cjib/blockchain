@@ -5,6 +5,11 @@ const bodyParser = require('body-parser');
 // bodyParser() is used to let us get the data from a POST
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5000");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
 const Fabric_Client = require('fabric-client');
 const path = require('path');
