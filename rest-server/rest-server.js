@@ -188,17 +188,33 @@ router.use(function (req, res, next) {
     .get('/getCitizen', function (req, res, next) {
         console.log(req.query);
 
-        let params = [req.query.bsn, req.query.fineAmount]
-        if (req.query.months) {
-            params.push(req.query.months);
+        let requestBsn = req.query.bsn;
+        let requestFineAmount = req.query.fineAmount;
+        let requestMonths = req.query.months;
+
+        let params = [requestBsn, requestFineAmount]
+        if (requestMonths) {
+            params.push(requestMonths);
         }
 
         query({
             chaincodeId: 'mycc',
             fcn: 'getCitizen',
             args: params
-        }).then(data => {
-            res.json(JSON.parse(data.toString()))
+        }).then(fetchedCitizen => {
+            let citizenInfo = JSON.parse(fetchedCitizen.toString())
+            let response = {
+                answer: false
+            }
+            let financialSupport = citizenInfo.financialSupport;
+
+            if (requestMonths) {
+                response.answer = (financialSupport * requestMonths >= requestFineAmount);
+            } else {
+                response.answer = (financialSupport >= requestFineAmount);
+            }
+
+            res.json(response);
         }).catch(next);
     })
 
