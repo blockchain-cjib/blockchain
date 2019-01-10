@@ -60,7 +60,7 @@ Invoke with custom arguments:
 
 To add a new citizen: 
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5", "yes"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5", "1000", "true", "1"]}'
 ```
 To delete an existing citizen:
 ```console
@@ -68,7 +68,7 @@ foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen","123"]
 ```
 To update financial support information of an existing citizen:
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123", "no"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123", "2000"]}'
 ```
 
 
@@ -88,7 +88,7 @@ foo@bar:~$ make query-specific-block BLOCK_NUMBER=*a*
 To retrieve the latest block added:
 
 ```console
-foo@bar:~$ make query-latest-block
+foo@bar:~$ make query-oldest-block
 ```
 
 To retrieve the newest block added:
@@ -121,8 +121,15 @@ Listening at http://localhost:8081
 
 #### Invoke and Query server
 
+__**Create Citizen**__
+
 ```console
-foo@bar:~$ http POST localhost:8080/api/createCitizen bsn='3' name='James' addressCity='Delft' addressStreet='Street 5' --json
+foo@bar:~$ http POST localhost:8080/api/createCitizen bsn='3' firstName='James' lastName='Doe' address='Street 5' financialSupport='1000' consent='true' municipalityId='1' --json
+```
+
+__**Response**__
+
+```console
 HTTP/1.1 200 OK
 Connection: keep-alive
 Content-Length: 20
@@ -136,9 +143,15 @@ X-Powered-By: Express
 }
 ```
 
+__**Query Citizen**__
 
 ```console
 foo@bar:~$ http GET localhost:8080/api/getCitizen?bsn=3
+```
+
+__**Response**__
+
+```console
 HTTP/1.1 200 OK
 Connection: keep-alive
 Content-Length: 95
@@ -148,10 +161,13 @@ ETag: W/"5f-i6rnL/mRxMJYbCoyuBiOXgE8y+M"
 X-Powered-By: Express
 
 {
-    "addressCity": "Delft", 
-    "addressStreet": "Street 5", 
-    "bsn": "3", 
-    "docType": "citizen", 
-    "name": "James"
+    "address": "Street 5",
+    "bsn": "3",
+    "consent": "true",
+    "docType": "citizen",
+    "financialSupport": "1000",
+    "firstName": "James",
+    "lastName": "Doe",
+    "municipalityId": "1"
 }
 ```
