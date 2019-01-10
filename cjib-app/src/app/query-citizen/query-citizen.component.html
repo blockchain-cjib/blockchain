@@ -29,7 +29,7 @@
                     </select>
                 </div>
             </form>
-            <form *ngIf="selectedType.id !== 2" [formGroup]="queryCitizenForm" (ngSubmit)="onSubmit()">
+            <form *ngIf="selectedType.id !== 2" [formGroup]="queryCitizenForm" (ngSubmit)="onSubmit(f.bsn.value, f.money.value, undefined)">
                 <!-- BSN input -->
                 <div class="form-group">
                     <label for="bsn">Citizen BSN</label>
@@ -86,7 +86,7 @@
                     <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
                 </div>
             </form>
-            <form *ngIf="selectedType.id===2" [formGroup]="queryCitizenForm2" (ngSubmit)="onSubmit()">
+            <form *ngIf="selectedType.id===2" [formGroup]="queryCitizenForm2" (ngSubmit)="onSubmit(f2.bsn.value, f2.money.value, f2.months.value)">
                 <!-- BSN input -->
                 <div class="form-group">
                     <label for="bsn">Citizen BSN</label>

@@ -43,7 +43,9 @@ export class QueryCitizenComponent implements OnInit {
         });
     }
     
-    onSubmit() {
+    onSubmit(bsn, money, months) {
+        console.log(bsn, money, months);
+
         this.submitted = true;
 
         if (this.selectedType.id === 2) {
@@ -51,7 +53,7 @@ export class QueryCitizenComponent implements OnInit {
         } else {
             if (this.queryCitizenForm.invalid) return;
         }
-        this.queryCitizenAbilityToPay();
+        this.queryCitizenAbilityToPay(bsn, money, months);
     }
     
     get f() { return this.queryCitizenForm.controls; }
@@ -66,24 +68,17 @@ export class QueryCitizenComponent implements OnInit {
         this.months = null;
         this.submitted = false;
         this.errorAlert = false;
+        this.queryAnswer = undefined;
 
         this.queryCitizenForm.reset();
         this.queryCitizenForm2.reset();
 	}
 
-	queryCitizenAbilityToPay = function() {
+	queryCitizenAbilityToPay = function(bsn, fineAmount, months) {
         this.closeAlert();
         this.loading = true;
         
-        var body: any = {
-            fineAmount: this.money,
-            bsn: this.bsn
-        }
-        if (this.months) {
-            body.months = this.months;
-        }
-
-		this.apiService.queryCitizenAbilityToPay(body)
+		this.apiService.queryCitizenAbilityToPay(bsn, fineAmount, months)
 		.subscribe(
 			res => this.queryCitizenAbilityToPaySuccessCallback(res),
 			err => this.queryCitizenAbilityToPayFailCallback(err));
@@ -91,17 +86,15 @@ export class QueryCitizenComponent implements OnInit {
 
 	queryCitizenAbilityToPaySuccessCallback(result) {
         this.loading = false;
-        if (result.answer === 'true') {
-            this.queryAnswer = true;
-        } else if (result.answer === 'false') {
-            this.queryAnswer = false;
-        } else {
-            this.queryAnswer = null;
-        }
+        this.queryAnswer = result.answer;
 	}
 
 	queryCitizenAbilityToPayFailCallback(error) {
-		this.errorAlert = true;
+        if (error.status == 404) {
+            this.queryAnswer = null;
+        } else {
+            this.errorAlert = true;
+        }
 		this.loading = false;
     }
 }

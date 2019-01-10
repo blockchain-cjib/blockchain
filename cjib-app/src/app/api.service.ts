@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { map, filter, switchMap, catchError } from 'rxjs/operators';
 
 const httpOptions = {
-  headers: new HttpHeaders()
+    headers: new HttpHeaders(),
+    params: new HttpParams()
 };
 
 httpOptions.headers.append('Content-Type', 'application/json');
@@ -15,20 +16,27 @@ httpOptions.headers.append('Accept', 'application/json');
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:3000/api/';  // URL to web api
+  private apiUrl = 'http://localhost:8080/api/';
 
   constructor(private http: HttpClient) { }
 
-  queryCitizenAbilityToPay(requestBody): Observable<any> {
-    return this.http.post(this.apiUrl + 'cjibGetPersonInfo', requestBody, httpOptions).pipe(
-      map(res => res),
-      catchError(this.handleError))
+  queryCitizenAbilityToPay(bsn, fineAmount, months): Observable<any> {
+    httpOptions.params = httpOptions.params.set('bsn', bsn);
+    httpOptions.params = httpOptions.params.set('fineAmount', fineAmount);
+    if (months) {
+        httpOptions.params = httpOptions.params.set('months', months);
+    }
+
+    return this.http.get(this.apiUrl + 'getCitizen', httpOptions).pipe(
+        map(res => res),
+        catchError(this.handleError<any>()))
   }
 
-  private handleError(error: any): Observable<string> {
-      const errMsg = (error.message) ? error.message : error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-      console.error(errMsg);
-      return Observable.throw(errMsg);
+  private handleError<T> (result?: T) {
+    return (error: any): Observable<T> => {
+      console.error(error);
+      return throwError(error);
+    };
   }
 
   private extractData(res: Response): any {
