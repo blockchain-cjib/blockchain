@@ -110,12 +110,6 @@ var Chaincode = class {
         let fineAmount = parseInt(args[1]);
         let months = args[2];
 
-        console.log('=========================================');
-        console.log(bsn);
-        console.log(fineAmount);
-        console.log(months);
-        console.log('=========================================');
-
         if (!months) {
             months = parseInt(months);
         }
