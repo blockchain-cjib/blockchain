@@ -187,10 +187,16 @@ router.use(function (req, res, next) {
     // [GET] get citizen info based on the passed params
     .get('/getCitizen', function (req, res, next) {
         console.log(req.query);
+
+        let params = [req.query.bsn, req.query.fineAmount]
+        if (req.query.months) {
+            params.push(req.query.months);
+        }
+
         query({
             chaincodeId: 'mycc',
             fcn: 'getCitizen',
-            args: [req.query.bsn]
+            args: params
         }).then(data => {
             res.json(JSON.parse(data.toString()))
         }).catch(next);
