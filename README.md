@@ -82,7 +82,7 @@ The following command retrieves the block with specified blocknumber *a* (the *n
 added to the blockchain has blocknumber *n*-1):
 
 ```console
-foo@bar:~$ make query-specific-block *a*
+foo@bar:~$ make query-specific-block BLOCK_NUMBER=*a*
 ```
 
 To retrieve the latest block added:
