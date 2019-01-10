@@ -203,9 +203,12 @@ router.use(function (req, res, next) {
             fcn: 'setCitizen',
             args: [
                 req.body.bsn,
-                req.body.name,
-                req.body.addressCity,
-                req.body.addressStreet
+                req.body.firstName,
+                req.body.lastName,
+                req.body.address,
+                req.body.financialSupport,
+                req.body.consent,
+                req.body.municipalityId
             ]
         }).then(() => {
             res.json({'status': 'success'})

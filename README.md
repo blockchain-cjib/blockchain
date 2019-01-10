@@ -121,8 +121,15 @@ Listening at http://localhost:8081
 
 #### Invoke and Query server
 
+__**Create Citizen**__
+
 ```console
-foo@bar:~$ http POST localhost:8080/api/createCitizen bsn='3' name='James' addressCity='Delft' addressStreet='Street 5' --json
+foo@bar:~$ http POST localhost:8080/api/createCitizen bsn='3' firstName='James' lastName='Doe' address='Street 5' financialSupport='1000' consent='true' municipalityId='1' --json
+```
+
+__**Response**__
+
+```console
 HTTP/1.1 200 OK
 Connection: keep-alive
 Content-Length: 20
@@ -136,9 +143,15 @@ X-Powered-By: Express
 }
 ```
 
+__**Query Citizen**__
 
 ```console
 foo@bar:~$ http GET localhost:8080/api/getCitizen?bsn=3
+```
+
+__**Response**__
+
+```console
 HTTP/1.1 200 OK
 Connection: keep-alive
 Content-Length: 95

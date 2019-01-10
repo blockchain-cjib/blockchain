@@ -38,50 +38,62 @@ var Chaincode = class {
         }
     }
 
+    // Creates a new Citizen 
     async setCitizen(stub, args) {
         console.info('Creating new citizen')
-        if (args.length != 5) {
-            throw new Error('Incorrect number of arguments. Expecting 5');
-        }
-
-        if (args[0].length <= 0) {
-            throw new Error('1st argument (BSN) must be a non-empty string');
-        }
-        if (args[1].length <= 0) {
-            throw new Error('2nd argument (Name) must be a non-empty string');
-        }
-        if (args[2].length <= 0) {
-            throw new Error('3rd argument (AddressCity) must be a non-empty string');
-        }
-        if (args[3].length <= 0) {
-            throw new Error('4th argument (AddressStreet) must be a non-empty string');
-        }
-        if (args[4].length <= 0) {
-            throw new Error('4th argument (financialSupport) must be a non-empty string');
+        if (args.length != 7) {
+            throw new Error('Incorrect number of arguments. Expecting 7.');
         }
 
         let bsn = args[0];
-        let name = args[1];
-        let addressCity = args[2];
-        let addressStreet = args[3];
-        let financialSupport = args[4];
+        let firstName = args[1];
+        let lastName = args[2];
+        let address = args[3];
+        let financialSupport = parseInt(args[4]);
+        let consent = (args[5] === 'true');
+        let municipalityId = parseInt(args[6]);
+
+        if (bsn.length <= 0) {
+            throw new Error('(BSN) was not provided');
+        }
+        if (firstName.length <= 0) {
+            throw new Error('(First Name) was not provided');
+        }
+        if (lastName.length <= 0) {
+            throw new Error('(Last Name) was not provided');
+        }
+        if (address.length <= 0) {
+            throw new Error('(Address) was not provided');
+        }
+        if (financialSupport < 0) {
+            throw new Error('(Financial Support) cannot be a negative number');
+        }
+        if (!consent) {
+            throw new Error('Citizen \"consent\" was not provided');
+        }
+        if (!municipalityId) {
+            throw new Error('\"Municipality Id\" was not provided');
+        }
+        
 
         // Check if bsn already exists
         console.log('Check if already exists');
 
         let citizenState = await stub.getPrivateData('citizenCollection', bsn);
         if (citizenState.toString()) {
-            throw new Error('Citizen with this BSN already exists ' + bsn);
+            throw new Error('Citizen with BSN: ' + bsn + ' already exists.' + bsn);
         }
 
         // Create citizen object
         let citizen = {};
         citizen.docType = 'citizen';
         citizen.bsn = bsn;
-        citizen.name = name;
-        citizen.addressCity = addressCity;
-        citizen.addressStreet = addressStreet;
+        citizen.firstName = firstName;
+        citizen.lastName = lastName;
+        citizen.address = address;
         citizen.financialSupport = financialSupport;
+        citizen.consent = consent;
+        citizen.municipalityId = municipalityId;
 
         // Store citizen
         await stub.putPrivateData('citizenCollection', bsn, Buffer.from(JSON.stringify(citizen)));
