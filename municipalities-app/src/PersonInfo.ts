@@ -1,9 +1,9 @@
-import {Municipality} from './Municipality'
-
 export class PersonInfo {
     bsn: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     address: string;
-    salary: number;
-    owner: Municipality;
+    financialSupport: number;
+    consent: string;
+    municipalityId: string;
 }
