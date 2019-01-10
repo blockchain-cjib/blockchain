@@ -161,10 +161,13 @@ ETag: W/"5f-i6rnL/mRxMJYbCoyuBiOXgE8y+M"
 X-Powered-By: Express
 
 {
-    "addressCity": "Delft", 
-    "addressStreet": "Street 5", 
-    "bsn": "3", 
-    "docType": "citizen", 
-    "name": "James"
+    "address": "Street 5",
+    "bsn": "3",
+    "consent": "true",
+    "docType": "citizen",
+    "financialSupport": "1000",
+    "firstName": "James",
+    "lastName": "Doe",
+    "municipalityId": "1"
 }
 ```
