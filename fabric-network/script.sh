@@ -17,24 +17,30 @@ CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer channel join -b mychannel.blo
 CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer channel join -b mychannel.block
 
 # install the chaincode on peer0
-echo "Installing chaincode"
-CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode install -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -v v0
-CORE_PEER_ADDRESS=peer1.org1.example.com:7051 peer chaincode install -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -v v0
-CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode install -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -v v0
-CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode install -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -v v0
-CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode install -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -v v0
+echo "Installing chaincode peer 0"
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+echo "Installing chaincode peer 1"
+CORE_PEER_ADDRESS=peer1.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+echo "Installing chaincode peer 2"
+CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+echo "Installing chaincode peer 3"
+CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+echo "Installing chaincode peer 4"
+CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
 
 #instantiate the chaincode on peer0
 echo "Instantiating chaincode on peer0"
-CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode instantiate -o orderer:5005 -C myc -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -v v0 -c '{"Args":["init","a","100","b","200"]}'
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n mycc -v v0 -c '{"Args":[""]}' --collections-config chaincode/chaincode/collections_config.json
 
-#query peer0
-echo "Querying peers"
-CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode query -C myc -n mycc -v v0 -c '{"Args":["query","a"]}'
-CORE_PEER_ADDRESS=peer1.org1.example.com:7051 peer chaincode query -C myc -n mycc -v v0 -c '{"Args":["query","a"]}'
-CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode query -C myc -n mycc -v v0 -c '{"Args":["query","a"]}'
-CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode query -C myc -n mycc -v v0 -c '{"Args":["query","a"]}'
-CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode query -C myc -n mycc -v v0 -c '{"Args":["query","a"]}'
+
+
+#invoke some info on peer 2
+#echo "Invoking info on peer 2"
+#CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode invoke -n mycc -c '{"Args":["setCitizen","123","James","Delft", "Street 5", "1000", "true", "1"]}' -C mychannel
+
+#query info on peer 3
+#echo "querying info on peer 3"
+#CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode query -C mychannel -n mycc -c '{"Args":["getCitizen","123"]}'
 
 sleep 600000
 exit 0
