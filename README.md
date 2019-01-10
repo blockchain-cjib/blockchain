@@ -60,7 +60,7 @@ Invoke with custom arguments:
 
 To add a new citizen: 
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5", "yes"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5", "1000", "true", "1"]}'
 ```
 To delete an existing citizen:
 ```console
@@ -68,7 +68,7 @@ foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen","123"]
 ```
 To update financial support information of an existing citizen:
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123", "no"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123", "2000"]}'
 ```
 
 
@@ -82,13 +82,13 @@ The following command retrieves the block with specified blocknumber *a* (the *n
 added to the blockchain has blocknumber *n*-1):
 
 ```console
-foo@bar:~$ make query-specific-block *a*
+foo@bar:~$ make query-specific-block BLOCK_NUMBER=*a*
 ```
 
 To retrieve the latest block added:
 
 ```console
-foo@bar:~$ make query-latest-block
+foo@bar:~$ make query-oldest-block
 ```
 
 To retrieve the newest block added:

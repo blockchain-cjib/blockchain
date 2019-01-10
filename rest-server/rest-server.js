@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5000");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
@@ -209,6 +209,33 @@ router.use(function (req, res, next) {
                 req.body.financialSupport,
                 req.body.consent,
                 req.body.municipalityId
+            ]
+        }).then(() => {
+            res.json({'status': 'success'})
+        }).catch(next);
+    })
+
+    // [PUT] update citizen info
+    .put('/updateCitizen', function (req, res, next) {
+        invoke({
+            chaincodeId: 'mycc',
+            fcn: 'updateCitizen',
+            args: [
+                req.body.bsn,
+                req.body.financialSupport,
+            ]
+        }).then(() => {
+            res.json({'status': 'success'})
+        }).catch(next);
+    })
+
+    // [DELETE] delete citizen info
+    .delete('/deleteCitizen', function (req, res, next) {
+        invoke({
+            chaincodeId: 'mycc',
+            fcn: 'deleteCitizen',
+            args: [
+                req.body.bsn
             ]
         }).then(() => {
             res.json({'status': 'success'})

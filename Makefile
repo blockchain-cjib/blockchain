@@ -130,37 +130,31 @@ fabric-dev-all-upgrade:
 	tmux new-window -n log './dockerlogs.sh $(CC_VERSION)'
 
 query-specific-block:
-	cd fabric-network-dev && \
+	cd $(FABRIC_ROOT_DIR) && \
 		docker exec \
 			-it cli /bin/bash -c \
 				'peer channel fetch $(BLOCK_NUMBER) block$(BLOCK_NUMBER).block -c mychannel --orderer orderer.example.com:7050'
-	mv -f fabric-network-dev/block$(BLOCK_NUMBER).block fabric-network-dev/bin/block$(BLOCK_NUMBER).block
-	cd fabric-network-dev/bin && \
-	configtxlator proto_decode --type=common.Block --input=block$(BLOCK_NUMBER).block |  jq '.' > block$(BLOCK_NUMBER).json && \
-	rm -f block$(BLOCK_NUMBER).block && \
-	mv -f block$(BLOCK_NUMBER).json blocks/block$(BLOCK_NUMBER).json
+	mv -f $(FABRIC_ROOT_DIR)/block$(BLOCK_NUMBER).block $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block
+	$(BIN_DIR)/configtxlator proto_decode --type=common.Block --input=$(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block |  jq '.' > $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).json && \
+	rm -f $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block
 
 query-newest-block:
-	cd fabric-network-dev && \
+	cd $(FABRIC_ROOT_DIR) && \
 		docker exec \
 			-it cli /bin/bash -c \
 				'peer channel fetch newest newest.block -c mychannel --orderer orderer.example.com:7050'
-	mv -f fabric-network-dev/newest.block fabric-network-dev/bin/newest.block
-	cd fabric-network-dev/bin && \
-	configtxlator proto_decode --type=common.Block --input=newest.block |  jq '.' > newestBlock.json && \
-	rm -f newest.block && \
-	mv -f newestBlock.json blocks/newestBlock.json
+	mv -f $(FABRIC_ROOT_DIR)/newest.block $(FABRIC_ROOT_DIR)/blocks/newest.block
+	$(BIN_DIR)/configtxlator proto_decode --type=common.Block --input=$(FABRIC_ROOT_DIR)/blocks/newest.block |  jq '.' > $(FABRIC_ROOT_DIR)/blocks/newestBlock.json && \
+	rm -f $(FABRIC_ROOT_DIR)/blocks/newest.block
 
 query-oldest-block:
-	cd fabric-network-dev && \
+	cd $(FABRIC_ROOT_DIR) && \
 		docker exec \
 			-it cli /bin/bash -c \
 				'peer channel fetch oldest oldest.block -c mychannel --orderer orderer.example.com:7050'
-	mv -f fabric-network-dev/oldest.block fabric-network-dev/bin/oldest.block
-	cd fabric-network-dev/bin && \
-	configtxlator proto_decode --type=common.Block --input=oldest.block |  jq '.' > oldestBlock.json && \
-	rm -f oldest.block && \
-	mv -f oldestBlock.json blocks/oldestBlock.json
+	mv -f $(FABRIC_ROOT_DIR)/oldest.block $(FABRIC_ROOT_DIR)/blocks/oldest.block
+	$(BIN_DIR)/configtxlator proto_decode --type=common.Block --input=$(FABRIC_ROOT_DIR)/blocks/oldest.block |  jq '.' > $(FABRIC_ROOT_DIR)/blocks/oldestBlock.json && \
+	rm -f $(FABRIC_ROOT_DIR)/blocks/oldest.block
 
 # Start the rest server to interact with the blockchain network
 start-rest:

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../api.service';
-import { PersonInfo } from '../../org.example.cjibnetwork';
+import { PersonInfo } from '../../PersonInfo';
 
 @Component({
   selector: 'app-citizen-form',
@@ -9,7 +9,7 @@ import { PersonInfo } from '../../org.example.cjibnetwork';
   styleUrls: ['./citizen-form.component.css']
 })
 export class CitizenFormComponent implements OnInit {
-    mockMunicipalityId = "1";
+    mockMunicipalityId = '1';
     uploadCitizenForm: FormGroup;
 
     submitted = false;
@@ -18,17 +18,15 @@ export class CitizenFormComponent implements OnInit {
     successAlert = false;
 
     person = {
-        BSN: undefined,
+        bsn: undefined,
         firstName: undefined,
         lastName: undefined,
         address: undefined,
         financialSupport: undefined,
-        consent: false,
-        owner: "org.example.cjibnetwork.Municipality#" + this.mockMunicipalityId
+        consent: 'false',
+        municipalityId: this.mockMunicipalityId
     }
   
-    persons: PersonInfo[];
-    
     constructor(private apiService: ApiService, private formBuilder: FormBuilder) { }
 
     ngOnInit() {
@@ -48,7 +46,7 @@ export class CitizenFormComponent implements OnInit {
         if (this.uploadCitizenForm.invalid) {
             return;
         } 
-        this.uploadPersonInformation();
+        this.createCitizenInformation();
     }
 
     get f() { return this.uploadCitizenForm.controls; }
@@ -57,41 +55,32 @@ export class CitizenFormComponent implements OnInit {
 		this.errorAlert = false;
 		this.successAlert = false;
     }
-    
-    getAllPersonInformation(): void {
-        this.apiService.getAllPersonInformation()
-            .subscribe(persons => this.persons = persons);
-    }
 
-    uploadPersonInformation(): void {
+    createCitizenInformation(): void {
         this.loading = true;
         this.closeAlert();
 
-        this.person.BSN = this.f.bsn.value;
+        this.person.bsn = this.f.bsn.value;
         this.person.firstName = this.f.firstName.value;
         this.person.lastName = this.f.lastName.value;
         this.person.address = this.f.address.value;
         this.person.financialSupport = this.f.financialSupport.value;
-        this.person.consent = this.f.consent.value;
+        this.person.consent = String(this.f.consent.value);
 
-        var body = {
-            personinfo: this.person
-        }
-
-        this.apiService.uploadPersonInformation(body)
+        this.apiService.createCitizenInformation(this.person)
         .subscribe(
-            res => this.uploadPersonInformationSuccessCallback(res),
-            err => this.uploadPersonInformationFailCallback(err)
+            res => this.createCitizenInformationSuccessCallback(res),
+            err => this.createCitizenInformationFailCallback(err)
         );
     }
 
-    uploadPersonInformationSuccessCallback (result) {
+    createCitizenInformationSuccessCallback (result) {
         this.loading = false;
         this.successAlert = true;
         this.submitted = false;
     }
 
-    uploadPersonInformationFailCallback(error) {
+    createCitizenInformationFailCallback(error) {
         this.loading = false;
         this.errorAlert = true;
         this.submitted = false;
