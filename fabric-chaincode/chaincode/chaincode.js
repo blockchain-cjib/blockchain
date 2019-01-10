@@ -114,7 +114,7 @@ var Chaincode = class {
         let citizen = await stub.getPrivateData('citizenCollection', bsn);
         //let citizen = await stub.getState(bsn);
         if (citizen.toString() == []) {
-            throw new Error('Citizen with this BSN does not exist');
+            throw new Error('404: Citizen with this BSN does not exist');
         }
 
         console.info(citizen.toString());

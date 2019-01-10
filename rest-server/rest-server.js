@@ -126,7 +126,7 @@ function invoke(params, next) {
         } else {
             throw new Error('Transaction failed to be committed to the ledger due to :: ' + results[1]);
         }
-    }).catch((next));
+    }).catch(next);
 }
 
 function query(params, next) {
@@ -161,7 +161,7 @@ function query(params, next) {
         // query_responses could have more than one  results if there multiple peers were used as targets
         if (query_responses && query_responses.length === 1) {
             if (query_responses[0] instanceof Error) {
-                console.error("error from query = ", query_responses[0]);
+                throw query_responses[0];
             } else {
                 console.log("Response is ", query_responses[0].toString());
                 return query_responses[0];
@@ -217,10 +217,17 @@ router.use(function (req, res, next) {
 
 app.use('/api', router);
 
+function getError(message) {
+    if (message.startsWith('transaction returned with failure: Error: 404: ')) {
+        return 404
+    } else {
+        return 500
+    }
+}
+
 app.use(function (err, req, res, next) {
-    // console.error(err.stack);
-    res.status(500).send({
-        'message': err.toString()
+    res.status(getError(err.message)).send({
+        'message': err.message
     })
 });
 
