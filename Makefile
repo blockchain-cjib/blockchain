@@ -159,6 +159,7 @@ query-oldest-block:
 # Start the rest server to interact with the blockchain network
 start-rest:
 	cd rest-server && \
+	rm -rf hfc-key-store && \
 	npm install && \
 	node enrollAdmin.js && \
 	node rest-server.js

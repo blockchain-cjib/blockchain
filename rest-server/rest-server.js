@@ -126,7 +126,7 @@ function invoke(params, next) {
         } else {
             throw new Error('Transaction failed to be committed to the ledger due to :: ' + results[1]);
         }
-    }).catch((next));
+    }).catch(next);
 }
 
 function query(params, next) {
@@ -161,7 +161,7 @@ function query(params, next) {
         // query_responses could have more than one  results if there multiple peers were used as targets
         if (query_responses && query_responses.length === 1) {
             if (query_responses[0] instanceof Error) {
-                console.error("error from query = ", query_responses[0]);
+                throw query_responses[0];
             } else {
                 console.log("Response is ", query_responses[0].toString());
                 return query_responses[0];
@@ -187,10 +187,16 @@ router.use(function (req, res, next) {
     // [GET] get citizen info based on the passed params
     .get('/getCitizen', function (req, res, next) {
         console.log(req.query);
+
+        let params = [req.query.bsn, req.query.fineAmount]
+        if (req.query.months) {
+            params.push(req.query.months);
+        }
+
         query({
             chaincodeId: 'mycc',
             fcn: 'getCitizen',
-            args: [req.query.bsn]
+            args: params
         }).then(data => {
             res.json(JSON.parse(data.toString()))
         }).catch(next);
@@ -213,14 +219,48 @@ router.use(function (req, res, next) {
         }).then(() => {
             res.json({'status': 'success'})
         }).catch(next);
+    })
+
+    // [PUT] update citizen info
+    .put('/updateCitizen', function (req, res, next) {
+        invoke({
+            chaincodeId: 'mycc',
+            fcn: 'updateCitizen',
+            args: [
+                req.body.bsn,
+                req.body.financialSupport,
+            ]
+        }).then(() => {
+            res.json({'status': 'success'})
+        }).catch(next);
+    })
+
+    // [DELETE] delete citizen info
+    .delete('/deleteCitizen', function (req, res, next) {
+        invoke({
+            chaincodeId: 'mycc',
+            fcn: 'deleteCitizen',
+            args: [
+                req.body.bsn
+            ]
+        }).then(() => {
+            res.json({'status': 'success'})
+        }).catch(next);
     });
 
 app.use('/api', router);
 
+function getError(message) {
+    if (message.startsWith('transaction returned with failure: Error: 404: ')) {
+        return 404
+    } else {
+        return 500
+    }
+}
+
 app.use(function (err, req, res, next) {
-    // console.error(err.stack);
-    res.status(500).send({
-        'message': err.toString()
+    res.status(getError(err.message)).send({
+        'message': err.message
     })
 });
 

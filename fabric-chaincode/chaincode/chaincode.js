@@ -102,19 +102,29 @@ var Chaincode = class {
     }
 
     async getCitizen(stub, args) {
-        if (args.length != 1) {
-            throw new Error('Incorrect number of arguments. Expecting 1');
+        if (args.length < 2 || args.length > 3) {
+            throw new Error('Incorrect number of arguments. Expecting 2-3');
         }
 
         let bsn = args[0];
-        if (args[0].length <= 0) {
-            throw new Error('1st argument (BSN) must be a non-empty string');
+        let fineAmount = parseInt(args[1]);
+        let months = args[2];
+
+        if (!months) {
+            months = parseInt(months);
+        }
+
+        if (bsn.length <= 0) {
+            throw new Error('(BSN) was not provided');
+        }
+        if (fineAmount <= 0) {
+            throw new Error('\"Fine amount\" cannot be less than or equal to zero');
         }
 
         let citizen = await stub.getPrivateData('citizenCollection', bsn);
         //let citizen = await stub.getState(bsn);
         if (citizen.toString() == []) {
-            throw new Error('Citizen with this BSN does not exist');
+            throw new Error('404: Citizen with this BSN does not exist');
         }
 
         console.info(citizen.toString());
