@@ -213,6 +213,33 @@ router.use(function (req, res, next) {
         }).then(() => {
             res.json({'status': 'success'})
         }).catch(next);
+    })
+
+    // [PUT] update citizen info
+    .put('/updateCitizen', function (req, res, next) {
+        invoke({
+            chaincodeId: 'mycc',
+            fcn: 'updateCitizen',
+            args: [
+                req.body.bsn,
+                req.body.financialSupport,
+            ]
+        }).then(() => {
+            res.json({'status': 'success'})
+        }).catch(next);
+    })
+
+    // [DELETE] delete citizen info
+    .delete('/deleteCitizen', function (req, res, next) {
+        invoke({
+            chaincodeId: 'mycc',
+            fcn: 'deleteCitizen',
+            args: [
+                req.body.bsn
+            ]
+        }).then(() => {
+            res.json({'status': 'success'})
+        }).catch(next);
     });
 
 app.use('/api', router);
