@@ -64,41 +64,36 @@ fabric-start-network:
 # Not completely sure what it does but it is nececary when you run the network in development mode
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate'
 fabric-dev-chaincode-connect:
-	docker exec \
-		-it chaincode /bin/bash -c \
-			'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer0.org1.example.com:7052'
+	docker exec -it chaincode /bin/bash -c \
+		'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer0.org1.example.com:7052'
 
 # Installs the chaincode on the peer
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate' and 'make fabric-dev-all-upgrade'.
 fabric-chaincode-install:
-	docker exec \
-		-it cli /bin/bash -c \
-			'peer chaincode install -p chaincode/chaincode -n mycc -v $(CC_VERSION) -l "$(CC_LANG)"'
+	docker exec -it cli /bin/bash -c \
+		'peer chaincode install -p chaincode/chaincode -n mycc -v $(CC_VERSION) -l "$(CC_LANG)"'
 
 # Instantiates the chaincode on the peer, only for the first time, after this run upgrade instead.
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate'
 fabric-chaincode-instantiate:
 	make fabric-chaincode-install CC_VERSION=$(CC_VERSION)
-	docker exec \
-		-it cli /bin/bash -c \
-			'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel --collections-config chaincode/chaincode/collections_config.json'
+	docker exec -it cli /bin/bash -c \
+		'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel --collections-config chaincode/chaincode/collections_config.json'
 
 # Instantiates the chaincode on the peer, only for the first time, after this run upgrade instead.
 # Better not to run manually!  Its in 'make fabric-dev-all-upgrade'
 fabric-chaincode-upgrade:
 	make fabric-chaincode-install CC_VERSION=$(CC_VERSION)
-	docker exec \
-		-it cli /bin/bash -c \
-			'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel  --collections-config chaincode/chaincode/collections_config.json'
+	docker exec -it cli /bin/bash -c \
+		'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel  --collections-config chaincode/chaincode/collections_config.json'
 
 # Invoke something on the chaincode, invoking is done to put some information on the blockchain
 #
 # EXAMPLE: make fabric-dev-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5"]}'
 # Executes the chaincode function 'setCitizen' with arguments "123","James","Delft", "Street 5"
 fabric-chaincode-invoke:
-	docker exec \
-		-it cli /bin/bash -c \
-			'peer chaincode invoke -n mycc -c '\''$(CC_ARGS)'\'' -C mychannel'
+	docker exec -it cli /bin/bash -c \
+		'peer chaincode invoke -n mycc -c '\''$(CC_ARGS)'\'' -C mychannel'
 
 # Query some data on the blockchain, querying is done to retriev some information from the blockchain
 #
@@ -130,31 +125,32 @@ fabric-dev-all-upgrade:
 	tmux new-window -n log './dockerlogs.sh $(CC_VERSION)'
 
 query-specific-block:
-	cd $(FABRIC_ROOT_DIR) && \
-		docker exec \
-			-it cli /bin/bash -c \
-				'peer channel fetch $(BLOCK_NUMBER) block$(BLOCK_NUMBER).block -c mychannel --orderer orderer.example.com:7050'
+	docker exec -it cli /bin/bash -c \
+			'peer channel fetch $(BLOCK_NUMBER) block$(BLOCK_NUMBER).block -c mychannel --orderer orderer.example.com:7050'
 	mv -f $(FABRIC_ROOT_DIR)/block$(BLOCK_NUMBER).block $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block
-	$(BIN_DIR)/configtxlator proto_decode --type=common.Block --input=$(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block |  jq '.' > $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).json && \
-	rm -f $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block
+	$(BIN_DIR)/configtxlator proto_decode \
+		--type=common.Block \
+		--input=$(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block \
+		| jq '.' > $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).json && rm -f $(FABRIC_ROOT_DIR)/blocks/block$(BLOCK_NUMBER).block
 
 query-newest-block:
-	cd $(FABRIC_ROOT_DIR) && \
-		docker exec \
-			-it cli /bin/bash -c \
-				'peer channel fetch newest newest.block -c mychannel --orderer orderer.example.com:7050'
+	docker exec -it cli /bin/bash -c \
+			'peer channel fetch newest newest.block -c mychannel --orderer orderer.example.com:7050'
 	mv -f $(FABRIC_ROOT_DIR)/newest.block $(FABRIC_ROOT_DIR)/blocks/newest.block
-	$(BIN_DIR)/configtxlator proto_decode --type=common.Block --input=$(FABRIC_ROOT_DIR)/blocks/newest.block |  jq '.' > $(FABRIC_ROOT_DIR)/blocks/newestBlock.json && \
-	rm -f $(FABRIC_ROOT_DIR)/blocks/newest.block
+	$(BIN_DIR)/configtxlator proto_decode \
+		--type=common.Block \
+		--input=$(FABRIC_ROOT_DIR)/blocks/newest.block \
+		| jq '.' > $(FABRIC_ROOT_DIR)/blocks/newestBlock.json \
+		&& rm -f $(FABRIC_ROOT_DIR)/blocks/newest.block
 
 query-oldest-block:
-	cd $(FABRIC_ROOT_DIR) && \
-		docker exec \
-			-it cli /bin/bash -c \
-				'peer channel fetch oldest oldest.block -c mychannel --orderer orderer.example.com:7050'
+	docker exec -it cli /bin/bash -c \
+			'peer channel fetch oldest oldest.block -c mychannel --orderer orderer.example.com:7050'
 	mv -f $(FABRIC_ROOT_DIR)/oldest.block $(FABRIC_ROOT_DIR)/blocks/oldest.block
-	$(BIN_DIR)/configtxlator proto_decode --type=common.Block --input=$(FABRIC_ROOT_DIR)/blocks/oldest.block |  jq '.' > $(FABRIC_ROOT_DIR)/blocks/oldestBlock.json && \
-	rm -f $(FABRIC_ROOT_DIR)/blocks/oldest.block
+	$(BIN_DIR)/configtxlator proto_decode \
+		--type=common.Block \
+		--input=$(FABRIC_ROOT_DIR)/blocks/oldest.block \
+		| jq '.' > $(FABRIC_ROOT_DIR)/blocks/oldestBlock.json && rm -f $(FABRIC_ROOT_DIR)/blocks/oldest.block
 
 # Start the rest server to interact with the blockchain network
 start-rest:
