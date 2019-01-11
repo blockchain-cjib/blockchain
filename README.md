@@ -74,7 +74,7 @@ foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123",
 
 #### Query chaincode on the network
 ```console
-foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123"]}'
+foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123", "100", "2"]}'
 ```
 
 #### Query actual blocks on the blockchain
