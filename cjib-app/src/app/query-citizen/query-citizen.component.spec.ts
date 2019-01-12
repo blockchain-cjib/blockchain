@@ -1,5 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule }    from '@angular/common/http';
 import { QueryCitizenComponent } from './query-citizen.component';
 
 describe('QueryCitizenComponent', () => {
@@ -8,7 +10,14 @@ describe('QueryCitizenComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ QueryCitizenComponent ]
+      imports: [
+        FormsModule,
+        ReactiveFormsModule,
+        HttpClientModule
+      ],
+      declarations: [ 
+        QueryCitizenComponent 
+      ]
     })
     .compileComponents();
   }));
@@ -23,3 +32,4 @@ describe('QueryCitizenComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+ 
