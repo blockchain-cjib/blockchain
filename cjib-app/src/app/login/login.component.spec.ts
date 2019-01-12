@@ -1,8 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { LoginComponent } from './login.component';
 import { AppRoutingModule } from '../app-routing.module';
+
+import { LoginComponent } from './login.component';
 import { QueryCitizenComponent } from '../query-citizen/query-citizen.component';
 
 describe('LoginComponent', () => {

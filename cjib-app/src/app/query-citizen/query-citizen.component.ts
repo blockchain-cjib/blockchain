@@ -24,8 +24,7 @@ export class QueryCitizenComponent implements OnInit {
   	constructor(private apiService: ApiService, private formBuilder: FormBuilder) { 
     	this.queryTypes = [
 			{id: 1, text: "Can person pay X?"},
-			{id: 2, text: "Can person pay X in Y months?"},
-			{id: 3, text: "Does person earn more than X?"}
+			{id: 2, text: "Can person pay X in Y months?"}
 		]
   	}
 
@@ -44,8 +43,6 @@ export class QueryCitizenComponent implements OnInit {
     }
     
     onSubmit(bsn, money, months) {
-        console.log(bsn, money, months);
-
         this.submitted = true;
 
         if (this.selectedType.id === 2) {
