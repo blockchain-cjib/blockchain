@@ -1,20 +1,6 @@
-<style>
-.container {
-    margin: 0 auto;
-    margin-top: 80px;
-    width: 150em;
-}
-
-#checkTxt {
-    width: 100%;
-    font-size: 80%;
-    color: #dc3545;
-}
-</style>
-
-<div class="container">
+<div class="citContainer container">
     <div class="row">
-        <div class="col-md-6 offset-md-3">
+        <div class="col-lg-6 mx-auto">
             <form [formGroup]="uploadCitizenForm" (ngSubmit)="onSubmit()">
                 <div [hidden]="!errorAlert" class="alert alert-danger" role="alert">
                     <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
