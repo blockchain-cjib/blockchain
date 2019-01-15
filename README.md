@@ -188,7 +188,7 @@ The following request will return a **token**. Use this for the next requests!
 **Postman URL:** http://localhost:8080/createCitizen \
 **HTTP method:** POST \
 **HTTP headers:** Add the following pair: 
-```json
+```
 {
     Authorization -> TOKEN_THAT_WAS_RETURNED
 }
@@ -214,7 +214,7 @@ The following request will return a **token**. Use this for the next requests!
 **Postman URL:** http://localhost:8080/getCitizen?bsn=3&fineAmount=10020 \
 **HTTP method:** GET \
 **HTTP headers:** Add the following pair: 
-```json
+```
 {
     Authorization -> TOKEN_THAT_WAS_RETURNED
 }
