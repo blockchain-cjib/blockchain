@@ -196,16 +196,6 @@ router.use(function (req, res, next) {
     console.log('Received ' + req.method + ' request at ' + req.url);
     next();
 })
-    // /test endpoint
-    .get('/test/:param', function (req, res) {
-        User.findAll().then(users => {
-			res.json(users);
-		}).catch(err => {
-			console.log(err);
-			res.status(500).json({msg: "error", details: err});
-		});
-    })
-
     // [GET] get citizen info based on the passed params
     .get('/getCitizen', passport.authenticate('jwt', {session: false}), function (req, res, next) {
         var token = getToken(req.headers);
