@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 const httpOptions = {
@@ -26,9 +26,10 @@ export class ApiService {
   }
 
   private handleError(error: any): Observable<string> {
-      const errMsg = (error.message) ? error.message : error.status ? `${error.status} - ${error.statusText}` : 'Server error';
+      console.log(error);
+      const errMsg = 'Server error';
       console.error(errMsg); 
-      return Observable.throw(errMsg);
+      return throwError(error);
   }
 
   private extractData(res: Response): any {

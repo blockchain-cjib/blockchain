@@ -4,7 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule }    from '@angular/common/http';
 
 import { CitizenFormComponent } from './citizen-form.component';
-import { ApiService } from '../api.service';
+import { ApiService } from '../_services/api.service';
 import { of } from 'rxjs';
 
 describe('CitizenFormComponent', () => {

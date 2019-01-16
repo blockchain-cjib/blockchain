@@ -24,7 +24,7 @@ app.use(morgan('dev'));
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, Content-Type, Accept");
     next();
 });
 
@@ -270,7 +270,7 @@ router.use(function (req, res, next) {
                         // return the information including token as JSON
                         res.json({success: true, token: 'JWT ' + token});
                     } else {
-                        res.send({success: false, msg: 'Authentication failed. Wrong password.'});
+                        res.status(400).send({success: false, msg: 'Authentication failed. Wrong password.'});
                     }
                 });
             }
