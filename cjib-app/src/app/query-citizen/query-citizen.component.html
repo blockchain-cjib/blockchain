@@ -1,8 +1,6 @@
 <style>
     .container {
-        margin: 0 auto;
         margin-top: 130px;
-        width: 50em;
     }
     #answer {
         margin-top: 10px;
@@ -11,7 +9,7 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-md-10 offset-md-1">
+        <div class="col-lg-6 mx-auto">
             <div [hidden]="!errorAlert" class="alert alert-danger" role="alert">
                 <button type="button" class="close" aria-label="Close" (click)="closeAlert()">
                     <span aria-hidden="true">&times;</span>
@@ -75,11 +73,6 @@
                     <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
                 </button>
         
-                <button style="margin-left: 5px;" type="button" class="btn btn-info">
-                    History
-                    <i class="fa fa-history" aria-hidden="true"></i> 
-                </button>
-        
                 <div id="answer" class="form-group">
                     <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
                     <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
@@ -124,11 +117,6 @@
                     Search 
                     <i [hidden]="loading" class="fa fa-search"></i>
                     <i [hidden]="!loading" class="fa fa-spinner fa-spin"></i>
-                </button>
-        
-                <button style="margin-left: 5px;" type="button" class="btn btn-info">
-                    History
-                    <i class="fa fa-history" aria-hidden="true"></i> 
                 </button>
         
                 <div id="answer" class="form-group">

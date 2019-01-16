@@ -1,3 +1,6 @@
-#login-container {
-    margin-top: 11em;
+#wrapper {
+    border: 1px #c8c8c8;
+    border-style: double;
+    padding: 1.5em;
+    background-color: #f9f9f9;
 }
