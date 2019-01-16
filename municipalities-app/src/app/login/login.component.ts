@@ -41,7 +41,7 @@ export class LoginComponent implements OnInit {
         return;
     }
     this.login();
-}
+  }
 
   login = function () {
     var credentials = {

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
-import { ApiService } from '../api.service';
+import { ApiService } from '../_services/api.service';
 
 @Component({
   	selector: 'app-query-citizen',

@@ -4,7 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule }    from '@angular/common/http';
 
 import { QueryCitizenComponent } from './query-citizen.component';
-import { ApiService } from '../api.service';
+import { ApiService } from '../_services/api.service';
 import { of } from 'rxjs';
 
 describe('QueryCitizenComponent', () => {
