@@ -85,9 +85,10 @@ public class SimpleChaincode extends ChaincodeBase {
         Integer municipalityId = Integer.parseInt(municipalityIdStr);
         Boolean consent = (consentStr.equals("true"));
 
-        byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+        String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
 
-        if (citizenInfoByte != null) {
+
+        if (!citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
@@ -147,14 +148,10 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
-        if (citizenInfo == null) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist", bsn));
-        }
-
         Integer financialSupport = citizenInfo.getFinancialSupport();
         _logger.info(String.format("Query Response:\nBSN: %s, financialSupport: %s\n", bsn, financialSupport));
         return newSuccessResponse();
-        return newSuccessResponse(citizenInfo);
+        //return newSuccessResponse(citizenInfo);
 
     }
 
