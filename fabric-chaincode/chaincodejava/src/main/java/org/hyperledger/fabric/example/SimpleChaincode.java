@@ -135,6 +135,12 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("Fine amount was not provided");
         }
 
+        String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
+
+        if (citizenInfoStr.equals("")) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+        }
+
         CitizenInfo citizenInfo = new CitizenInfo();
         byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
         try {
@@ -143,10 +149,6 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("Conversion Error");
         } catch (ClassNotFoundException e) {
             return newErrorResponse("Class not found");
-        }
-
-        if (citizenInfo == null) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
         Integer financialSupport = citizenInfo.getFinancialSupport();
@@ -166,8 +168,12 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
-        //String citizen  = stub.getStringState(bsn);
-        //String citizen  = stub.getPrivateData("citizenCollection", bsn);
+        String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
+
+        if (citizenInfoStr.equals("")) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+        }
+
         CitizenInfo citizenInfo = new CitizenInfo();
         byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
         try {
@@ -176,10 +182,6 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("Conversion Error");
         } catch (ClassNotFoundException e) {
             return newErrorResponse("Class not found");
-        }
-
-        if (citizenInfo == null) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
         //stub.delState(bsn);
@@ -199,7 +201,12 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
-        //String citizen = stub.getStringState(bsn);
+        String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
+
+        if (citizenInfoStr.equals("")) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+        }
+
         CitizenInfo citizenInfo = new CitizenInfo();
         byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
         try {
@@ -208,10 +215,6 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("Conversion Error");
         } catch (ClassNotFoundException e) {
             return newErrorResponse("Class not found");
-        }
-
-        if (citizenInfo == null) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
         Integer newFinancialSupport = Integer.parseInt(args.get(1));
