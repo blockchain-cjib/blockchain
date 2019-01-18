@@ -88,7 +88,8 @@ public class SimpleChaincode extends ChaincodeBase {
         Boolean consent = (consentStr.equals("true"));
 
         String citizenState = stub.getPrivateDataUTF8("citizenCollection", bsn);
-        if (citizenState == null) {
+
+        if (!citizenState.equals("")) {
             return newErrorResponse("Citizen with BSN: " + bsn + " already exists");
         }
 
