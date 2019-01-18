@@ -153,9 +153,15 @@ public class SimpleChaincode extends ChaincodeBase {
         String response = new JSONObject()
                 .put("bsn", citizenInfo.getBsn())
                 .put("firstName", citizenInfo.getFirstName())
+                .put("lastName", citizenInfo.getFirstName())
+                .put("address", citizenInfo.getAddress())
+                .put("financialSupport", citizenInfo.getFinancialSupport())
+                .put("consent", citizenInfo.getConsent())
+                .put("municipalityId", citizenInfo.getMunicipalityId())
                 .put("proof", serializedProof).toString();
+        _logger.info(response);
 
-        return newSuccessResponse(response);
+        return newSuccessResponse("success", ByteString.copyFrom(response, UTF_8).toByteArray());
     }
 
     private Response deleteCitizen(ChaincodeStub stub, List<String> args) {
