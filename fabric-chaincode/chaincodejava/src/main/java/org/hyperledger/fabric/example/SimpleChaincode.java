@@ -88,7 +88,7 @@ public class SimpleChaincode extends ChaincodeBase {
         Boolean consent = (consentStr.equals("true"));
 
         String citizenState = stub.getPrivateDataUTF8("citizenCollection", bsn);
-        if (citizenState != null) {
+        if (citizenState == null) {
             return newErrorResponse("Citizen with BSN: " + bsn + " already exists");
         }
 
@@ -98,7 +98,7 @@ public class SimpleChaincode extends ChaincodeBase {
             byte[] cit = objectToByteArray(citizenInfo);
             stub.putPrivateData("citizenCollection", bsn, cit);
         } catch (IOException e) {
-            return newErrorResponse("Conversion Error");
+            return newErrorResponse("Conversion Error " + e);
         }
 
         return newSuccessResponse();

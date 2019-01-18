@@ -1,6 +1,8 @@
 package org.hyperledger.fabric.example;
 
-public class CitizenInfo {
+import java.io.Serializable;
+
+public class CitizenInfo implements Serializable {
     private String bsn;
     private String firstName;
     private String lastName;
