@@ -1,8 +1,6 @@
 package org.hyperledger.fabric.example;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.List;
 
 import com.google.protobuf.ByteString;
@@ -87,21 +85,36 @@ public class SimpleChaincode extends ChaincodeBase {
         Integer municipalityId = Integer.parseInt(municipalityIdStr);
         Boolean consent = (consentStr.equals("true"));
 
-        String citizenState = stub.getPrivateDataUTF8("citizenCollection", bsn);
-        if (citizenState != null) {
-            return newErrorResponse("Citizen with BSN: " + bsn + " already exists");
+        CitizenInfo citizenInfo = new CitizenInfo();
+        byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+
+        if (citizenInfoByte != null) {
+            return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
-        CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address, financialSupport, consent, municipalityId);
+        /*try {
+            citizenInfo = byteArrayToObject(citizenInfoByte);
+        } catch (IOException e) {
+            return newErrorResponse("Conversion Error");
+        } catch (ClassNotFoundException e) {
+            return newErrorResponse("Class not found");
+        }
+
+        if (citizenInfo != null) {
+            return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
+        }
+*/
+
+        CitizenInfo newCitizenInfo = new CitizenInfo(bsn, firstName, lastName, address, financialSupport, consent, municipalityId);
 
         try {
-            byte[] cit = objectToByteArray(citizenInfo);
+            byte[] cit = objectToByteArray(newCitizenInfo);
             stub.putPrivateData("citizenCollection", bsn, cit);
         } catch (IOException e) {
             return newErrorResponse("Conversion Error");
         }
 
-        return newSuccessResponse();
+        return newSuccessResponse("citizen added succesfully");
     }
 
     private Response getCitizen(ChaincodeStub stub, List<String> args) {
@@ -122,7 +135,18 @@ public class SimpleChaincode extends ChaincodeBase {
         }
 
         CitizenInfo citizenInfo = new CitizenInfo();
-        citizenInfo = stub.getPrivateData("citizenCollection", bsn);
+        byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+        try {
+            citizenInfo = byteArrayToObject(citizenInfoByte);
+        } catch (IOException e) {
+            return newErrorResponse("Conversion Error");
+        } catch (ClassNotFoundException e) {
+            return newErrorResponse("Class not found");
+        }
+
+        if (citizenInfo == null) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+        }
 
         if (citizenInfo == null) {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist", bsn));
@@ -131,7 +155,7 @@ public class SimpleChaincode extends ChaincodeBase {
         Integer financialSupport = citizenInfo.getFinancialSupport();
         _logger.info(String.format("Query Response:\nBSN: %s, financialSupport: %s\n", bsn, financialSupport));
         return newSuccessResponse();
-        return newSuccessResponse(citizenInfo);
+        //return newSuccessResponse(citizenInfo);
 
     }
 
@@ -140,22 +164,30 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("Incorrect number of arguments. Expecting 1");
         }
 
-        String key = args.get(0);
-        if (key.length() <= 0) {
+        String bsn = args.get(0);
+        if (bsn.length() <= 0) {
             return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
         //String citizen  = stub.getStringState(bsn);
         //String citizen  = stub.getPrivateData("citizenCollection", bsn);
         CitizenInfo citizenInfo = new CitizenInfo();
-        citizenInfo = stub.getPrivateData("citizenCollection", bsn);
+        byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+        try {
+            citizenInfo = byteArrayToObject(citizenInfoByte);
+        } catch (IOException e) {
+            return newErrorResponse("Conversion Error");
+        } catch (ClassNotFoundException e) {
+            return newErrorResponse("Class not found");
+        }
+
         if (citizenInfo == null) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist", bsn));
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
         //stub.delState(bsn);
         stub.delPrivateData("citizenCollection", bsn);
-        return newSuccessResponse();
+
         _logger.info(String.format("citizen deleted with bsn number: %s", bsn));
         return newSuccessResponse();
     }
@@ -166,13 +198,21 @@ public class SimpleChaincode extends ChaincodeBase {
         }
 
         String bsn = args.get(0);
-         if (key.length() <= 0) {
+         if (bsn.length() <= 0) {
             return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
         //String citizen = stub.getStringState(bsn);
         CitizenInfo citizenInfo = new CitizenInfo();
-        citizenInfo = stub.getPrivateData("citizenCollection", bsn);
+        byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+        try {
+            citizenInfo = byteArrayToObject(citizenInfoByte);
+        } catch (IOException e) {
+            return newErrorResponse("Conversion Error");
+        } catch (ClassNotFoundException e) {
+            return newErrorResponse("Class not found");
+        }
+
         if (citizenInfo == null) {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
@@ -181,16 +221,14 @@ public class SimpleChaincode extends ChaincodeBase {
         //here change the financial support value of citizen object
         citizenInfo.setFinancialSupport(newFinancialSupport);
 
+        _logger.info(String.format("new financialSupport of citizen: %s", newFinancialSupport));
+
         try {
             byte[] cit = objectToByteArray(citizenInfo);
             stub.putPrivateData("citizenCollection", bsn, cit);
         } catch (IOException e) {
             return newErrorResponse("Conversion Error");
         }
-
-        _logger.info(String.format("new financialSupport of citizen: %s", newFinancialSupport));
-
-        stub.putPrivateData("citizenCollection", bsn, citizenInfo);
 
         _logger.info("Update complete");
 
@@ -204,6 +242,14 @@ public class SimpleChaincode extends ChaincodeBase {
         oos.writeObject(citizenInfo);
         oos.flush();
         return bos.toByteArray();
+    }
+
+    public static CitizenInfo byteArrayToObject(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        ObjectInputStream is = new ObjectInputStream(in);
+        CitizenInfo obj = (CitizenInfo) is.readObject();
+        in.close();
+        return obj;
     }
 
     public static void main(String[] args) {
