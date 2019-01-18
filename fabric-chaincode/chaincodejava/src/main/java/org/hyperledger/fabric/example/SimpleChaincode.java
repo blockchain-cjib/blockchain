@@ -172,8 +172,8 @@ public class SimpleChaincode extends ChaincodeBase {
                 .put("financialSupport", citizenInfo.getFinancialSupport())
                 .put("consent", citizenInfo.getConsent())
                 .put("municipalityId", citizenInfo.getMunicipalityId())
-                .put("commitment", serializedCommitment)
-                .put("proof", serializedProof).toString();
+                .put("commitment", new JSONObject(serializedCommitment))
+                .put("proof", new JSONObject(serializedProof)).toString();
         _logger.info(response);
 
         return newSuccessResponse("success", ByteString.copyFrom(response, UTF_8).toByteArray());
