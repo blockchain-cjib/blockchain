@@ -7,8 +7,13 @@ import java.math.BigInteger;
 import java.io.*;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
+import com.ing.blockchain.zk.RangeProof;
 import com.ing.blockchain.zk.TTPGenerator;
+import com.ing.blockchain.zk.dto.BoudotRangeProof;
+import com.ing.blockchain.zk.dto.ClosedRange;
 import com.ing.blockchain.zk.dto.TTPMessage;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
@@ -143,11 +148,20 @@ public class SimpleChaincode extends ChaincodeBase {
         Integer financialSupport = citizenInfo.getFinancialSupport();
         _logger.info(String.format("Query Response:\nBSN: %s, financialSupport: %s\n", bsn, financialSupport));
 
+        TTPMessage ttpMessage = citizenInfo.getTtpMessage();
+        BoudotRangeProof rangeProof = RangeProof
+                .calculateRangeProof(ttpMessage, ClosedRange.of("0", financialSupport.toString()));
+
+        ObjectMapper mapper = new ObjectMapper();
+        String serializedCommitment;
         String serializedProof;
         try {
-            serializedProof = Util.toString(citizenInfo);
-        } catch (IOException e) {
-            return newErrorResponse("Conversion Error " + e);
+            serializedCommitment = mapper.writeValueAsString(citizenInfo.getTtpMessage());
+            _logger.info("Proof: " + serializedCommitment);
+            serializedProof = mapper.writeValueAsString(rangeProof);
+            _logger.info("Proof: " + serializedProof);
+        } catch (JsonProcessingException e) {
+            return newErrorResponse(e);
         }
 
         String response = new JSONObject()
@@ -158,6 +172,7 @@ public class SimpleChaincode extends ChaincodeBase {
                 .put("financialSupport", citizenInfo.getFinancialSupport())
                 .put("consent", citizenInfo.getConsent())
                 .put("municipalityId", citizenInfo.getMunicipalityId())
+                .put("commitment", serializedCommitment)
                 .put("proof", serializedProof).toString();
         _logger.info(response);
 
