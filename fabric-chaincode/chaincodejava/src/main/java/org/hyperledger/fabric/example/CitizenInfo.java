@@ -1,5 +1,7 @@
 package org.hyperledger.fabric.example;
 
+import com.ing.blockchain.zk.dto.TTPMessage;
+
 import java.io.Serializable;
 
 public class CitizenInfo implements Serializable {
@@ -10,7 +12,7 @@ public class CitizenInfo implements Serializable {
     private Integer financialSupport;
     private Boolean consent;
     private Integer municipalityId;
-    private String ttpMessage;
+    private TTPMessage ttpMessage;
 
     public CitizenInfo() {
     }
@@ -18,7 +20,7 @@ public class CitizenInfo implements Serializable {
     public CitizenInfo(String bsn, String firstName,
                        String lastName, String address,
                        Integer financialSupport, Boolean consent,
-                       Integer municipalityId, String ttpMessage) {
+                       Integer municipalityId, TTPMessage ttpMessage) {
         this.bsn = bsn;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -85,11 +87,16 @@ public class CitizenInfo implements Serializable {
         this.municipalityId = municipalityId;
     }
 
-    public String getTtpMessage() {
+    public TTPMessage getTtpMessage() {
         return ttpMessage;
     }
 
-    public void setTtpMessage(String ttpMessage) {
+    public void setTtpMessage(TTPMessage ttpMessage) {
         this.ttpMessage = ttpMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "CitizenInfo: " + this.bsn;
     }
 }
