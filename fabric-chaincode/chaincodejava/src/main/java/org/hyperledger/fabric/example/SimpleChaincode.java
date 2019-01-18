@@ -85,7 +85,6 @@ public class SimpleChaincode extends ChaincodeBase {
         Integer municipalityId = Integer.parseInt(municipalityIdStr);
         Boolean consent = (consentStr.equals("true"));
 
-        CitizenInfo citizenInfo = new CitizenInfo();
         byte [] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
 
         if (citizenInfoByte != null) {
@@ -111,7 +110,7 @@ public class SimpleChaincode extends ChaincodeBase {
             byte[] cit = objectToByteArray(newCitizenInfo);
             stub.putPrivateData("citizenCollection", bsn, cit);
         } catch (IOException e) {
-            return newErrorResponse("Conversion Error");
+            return newErrorResponse("Conversion Error " + e);
         }
 
         return newSuccessResponse("citizen added succesfully");
@@ -155,7 +154,7 @@ public class SimpleChaincode extends ChaincodeBase {
         Integer financialSupport = citizenInfo.getFinancialSupport();
         _logger.info(String.format("Query Response:\nBSN: %s, financialSupport: %s\n", bsn, financialSupport));
         return newSuccessResponse();
-        //return newSuccessResponse(citizenInfo);
+        return newSuccessResponse(citizenInfo);
 
     }
 
