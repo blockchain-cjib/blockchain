@@ -3,9 +3,12 @@ package org.hyperledger.fabric.example;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.util.List;
 
 import com.google.protobuf.ByteString;
+import com.ing.blockchain.zk.TTPGenerator;
+import com.ing.blockchain.zk.dto.TTPMessage;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
@@ -93,7 +96,17 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("Citizen with BSN: " + bsn + " already exists");
         }
 
-        CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address, financialSupport, consent, municipalityId);
+        TTPMessage message = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
+
+        String serializedTtp;
+        try {
+            serializedTtp = Util.toString(message);
+        } catch (IOException e) {
+            return newErrorResponse("Failed to serialize ttp message " + e);
+        }
+
+        CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address,
+                financialSupport, consent, municipalityId, serializedTtp);
 
         try {
             byte[] cit = objectToByteArray(citizenInfo);

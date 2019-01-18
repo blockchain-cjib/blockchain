@@ -10,11 +10,15 @@ public class CitizenInfo implements Serializable {
     private Integer financialSupport;
     private Boolean consent;
     private Integer municipalityId;
+    private String ttpMessage;
 
     public CitizenInfo() {
     }
 
-    public CitizenInfo(String bsn, String firstName, String lastName, String address, Integer financialSupport, Boolean consent, Integer municipalityId) {
+    public CitizenInfo(String bsn, String firstName,
+                       String lastName, String address,
+                       Integer financialSupport, Boolean consent,
+                       Integer municipalityId, String ttpMessage) {
         this.bsn = bsn;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -22,6 +26,7 @@ public class CitizenInfo implements Serializable {
         this.financialSupport = financialSupport;
         this.consent = consent;
         this.municipalityId = municipalityId;
+        this.ttpMessage = ttpMessage;
     }
 
     public String getBsn() {
@@ -78,5 +83,13 @@ public class CitizenInfo implements Serializable {
 
     public void setMunicipalityId(Integer municipalityId) {
         this.municipalityId = municipalityId;
+    }
+
+    public String getTtpMessage() {
+        return ttpMessage;
+    }
+
+    public void setTtpMessage(String ttpMessage) {
+        this.ttpMessage = ttpMessage;
     }
 }
