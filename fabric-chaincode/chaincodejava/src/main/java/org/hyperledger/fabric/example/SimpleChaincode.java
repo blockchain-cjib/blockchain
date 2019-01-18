@@ -1,5 +1,8 @@
 package org.hyperledger.fabric.example;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
 import com.google.protobuf.ByteString;
@@ -84,15 +87,20 @@ public class SimpleChaincode extends ChaincodeBase {
         Integer municipalityId = Integer.parseInt(municipalityIdStr);
         Boolean consent = (consentStr.equals("true"));
 
-//        String citizenState = stub.getPrivateDataUTF8("citizenCollection", bsn);
-//        if (citizenState != null) {
-//            return newErrorResponse("Citizen with BSN: " + bsn + " already exists");
-//        }
-//        stub.putPrivateData();
+        String citizenState = stub.getPrivateDataUTF8("citizenCollection", bsn);
+        if (citizenState != null) {
+            return newErrorResponse("Citizen with BSN: " + bsn + " already exists");
+        }
 
         CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address, financialSupport, consent, municipalityId);
 
-//        return newSuccessResponse("invoke finished successfully", ByteString.copyFrom(accountFromKey + ": " + accountFromValue + " " + accountToKey + ": " + accountToValue, UTF_8).toByteArray());
+        try {
+            byte[] cit = objectToByteArray(citizenInfo);
+            stub.putPrivateData("citizenCollection", bsn, cit);
+        } catch (IOException e) {
+            return newErrorResponse("Conversion Error");
+        }
+
         return newSuccessResponse();
     }
 
@@ -123,6 +131,14 @@ public class SimpleChaincode extends ChaincodeBase {
 //        _logger.info(String.format("Query Response:\nName: %s, Amount: %s\n", key, val));
 //        return newSuccessResponse(val, ByteString.copyFrom(val, UTF_8).toByteArray());
         return newSuccessResponse();
+    }
+
+    private byte[] objectToByteArray(CitizenInfo citizenInfo) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(citizenInfo);
+        oos.flush();
+        return bos.toByteArray();
     }
 
     public static void main(String[] args) {
