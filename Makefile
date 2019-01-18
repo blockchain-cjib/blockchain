@@ -3,9 +3,9 @@
 #
 
 FABRIC_ROOT_DIR=fabric-network-dev
-CC_LANG=node
+CC_LANG=java
 CC_VERSION=$(shell date +"%y%m%d%H%M%S")
-CC_SRC_PATH=/opt/gopath/src/github.com/chaincode
+CC_SRC_PATH=chaincode/chaincodejava
 DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
 CHANNEL_NAME=mychannel
 CC_ARGS={"Args":[""]}
@@ -65,27 +65,27 @@ fabric-start-network:
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate'
 fabric-dev-chaincode-connect:
 	docker exec -it chaincode /bin/bash -c \
-		'cd chaincode && npm install && CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer0.org1.example.com:7052'
+		'cd chaincode CORE_CHAINCODE_ID_NAME=mycc:$(CC_VERSION) node chaincode --peer.address grpc://peer0.org1.example.com:7052'
 
 # Installs the chaincode on the peer
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate' and 'make fabric-dev-all-upgrade'.
 fabric-chaincode-install:
 	docker exec -it cli /bin/bash -c \
-		'peer chaincode install -p chaincode/chaincode -n mycc -v $(CC_VERSION) -l "$(CC_LANG)"'
+		'peer chaincode install -p $(CC_SRC_PATH) -n mycc -v $(CC_VERSION) -l "$(CC_LANG)"'
 
 # Instantiates the chaincode on the peer, only for the first time, after this run upgrade instead.
 # Better not to run manually! Its in 'make fabric-dev-all-instantiate'
 fabric-chaincode-instantiate:
 	make fabric-chaincode-install CC_VERSION=$(CC_VERSION)
 	docker exec -it cli /bin/bash -c \
-		'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel --collections-config chaincode/chaincode/collections_config.json'
+		'peer chaincode instantiate -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel --collections-config $(CC_SRC_PATH)/collections_config.json'
 
 # Instantiates the chaincode on the peer, only for the first time, after this run upgrade instead.
 # Better not to run manually!  Its in 'make fabric-dev-all-upgrade'
 fabric-chaincode-upgrade:
 	make fabric-chaincode-install CC_VERSION=$(CC_VERSION)
 	docker exec -it cli /bin/bash -c \
-		'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel  --collections-config chaincode/chaincode/collections_config.json'
+		'peer chaincode upgrade -n mycc -v $(CC_VERSION) -c '\''$(CC_ARGS)'\'' -C mychannel  --collections-config $(CC_SRC_PATH)/collections_config.json'
 
 # Invoke something on the chaincode, invoking is done to put some information on the blockchain
 #
@@ -100,14 +100,13 @@ fabric-chaincode-invoke:
 # EXAMPLE: make fabric-dev-chaincode-query CC_ARGS='{"Args":["getCitizen", "123"]}'
 # Executes the chaincode function 'getCitizen', with argument '123'
 fabric-chaincode-query:
-	docker exec \
-		-it cli /bin/bash -c \
+	docker exec -it cli /bin/bash -c \
 			'peer chaincode query -n mycc -c '\''$(CC_ARGS)'\'' -C mychannel'
 
 # Combo command to run multiple of above commamds at once
 fabric-dev-all-instantiate:
 	tmux rename-window main
-	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION)'
+	tmux new-window -n chaincode 'make fabric-dev-chaincode-connect CC_VERSION=$(CC_VERSION) ; sleep 666'
 	sleep 5
 	tmux new-window -n launch 'make fabric-chaincode-instantiate CC_VERSION=$(CC_VERSION) ; echo "UPGRADE DONE - Chaincode running container should start in a few seconds..." ; sleep 6666';
 	sleep 5
