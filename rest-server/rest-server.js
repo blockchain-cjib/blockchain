@@ -1,20 +1,39 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const config = require('./config/environment');
+const jwt  = require('jwt-simple');
+const passport = require('passport');
+const port = 8080;
 
-// bodyParser() is used to let us get the data from a POST
-app.use(bodyParser.urlencoded({extended: true}));
+const CJIB_ROLE = 0;
+const MUN_ROLE = 1;
+
+require('./config/passport')(passport);
+
+// Use the passport package in our application
+app.use(passport.initialize());
+
+// get request params
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+
+// log to console
+app.use(morgan('dev'));
+
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, Content-Type, Accept");
     next();
 });
 
 const Fabric_Client = require('fabric-client');
 const path = require('path');
 const util = require('util');
-
+const db = require('./config/db-config');
+const User = db.user;
+ 
 const fabric_client = new Fabric_Client();
 const channel = fabric_client.newChannel('mychannel');
 const peer = fabric_client.newPeer('grpc://localhost:7051');
@@ -177,92 +196,216 @@ router.use(function (req, res, next) {
     console.log('Received ' + req.method + ' request at ' + req.url);
     next();
 })
-    // /test endpoint
-    .get('/test/:param', function (req, res) {
-        console.log(req.params);
+    // [GET] get citizen info based on the passed params
+    .get('/getCitizen', passport.authenticate('jwt', {session: false}), function (req, res, next) {
+        var token = getToken(req.headers);
+        if (token) {
+            // Authorization token was provided
+            var decoded = jwt.decode(token, config.secret);
 
-        res.json({id: req.params.param, message: 'TODO: Implement me!'});
+            // Need this since both MUN & CJIB employees are stored in the same db
+            if (decoded.role !== CJIB_ROLE) {
+                res.status(403).json({success: false, msg: 'Authentication failed. User role has no access.'});
+            } else {
+                User.findOne({ where: {username: decoded.username} 
+                }).then(user => {
+                    if (!user) {
+                        res.status(403).json({success: false, msg: 'Authentication failed. User not found.'});
+                    } else {
+                        let requestBsn = req.query.bsn;
+                        let requestFineAmount = req.query.fineAmount;
+                        let requestMonths = req.query.months;
+    
+                        let params = [requestBsn, requestFineAmount]
+                        if (requestMonths) {
+                            params.push(requestMonths);
+                        }
+    
+                        // query the chaincode
+                        query({
+                            chaincodeId: 'mycc',
+                            fcn: 'getCitizen',
+                            args: params
+                        }).then(fetchedCitizen => {
+                            let citizenInfo = JSON.parse(fetchedCitizen.toString())
+                            let response = {
+                                answer: false
+                            }
+                            let financialSupport = citizenInfo.financialSupport;
+    
+                            if (requestMonths) {
+                                response.answer = (financialSupport * requestMonths >= requestFineAmount);
+                            } else {
+                                response.answer = (financialSupport >= requestFineAmount);
+                            }
+    
+                            res.json(response);
+                        }).catch(next);
+                    }
+                }).catch(err => {
+                    res.status(500).json({msg: "error", details: err});
+                });
+            }
+        } else {
+            // Authorization token was not provided
+            return res.status(403).send({success: false, msg: 'No token provided.'});
+        }
     })
 
-    // [GET] get citizen info based on the passed params
-    .get('/getCitizen', function (req, res, next) {
-        console.log(req.query);
+    // [POST] authenticate user
+    .post('/authenticate', function(req, res) {
+        var username = req.body.name;
+        var password = req.body.password;
 
-        let requestBsn = req.query.bsn;
-        let requestFineAmount = req.query.fineAmount;
-        let requestMonths = req.query.months;
-
-        let params = [requestBsn, requestFineAmount]
-        if (requestMonths) {
-            params.push(requestMonths);
-        }
-
-        query({
-            chaincodeId: 'mycc',
-            fcn: 'getCitizen',
-            args: params
-        }).then(fetchedCitizen => {
-            let citizenInfo = JSON.parse(fetchedCitizen.toString())
-            let response = {
-                answer: false
-            }
-            let financialSupport = citizenInfo.financialSupport;
-
-            if (requestMonths) {
-                response.answer = (financialSupport * requestMonths >= requestFineAmount);
+        User.findOne({ where: {username: username} 
+        }).then(user => {
+            if (!user) {
+                res.status(404).json({success: false, msg: 'Authentication failed. User not found.'});
             } else {
-                response.answer = (financialSupport >= requestFineAmount);
+                // check if password matches
+                user.comparePassword(password, function (err, isMatch) {
+                    if (isMatch && !err) {
+                        // creates a token if the user is found and the password is right 
+                        var token = jwt.encode(user, config.secret);
+                        // return the information including token as JSON
+                        res.json({success: true, token: 'JWT ' + token});
+                    } else {
+                        res.status(400).send({success: false, msg: 'Authentication failed. Wrong password.'});
+                    }
+                });
             }
-
-            res.json(response);
-        }).catch(next);
+		}).catch(err => {
+			res.status(500).json({msg: "error", details: err});
+		});
     })
 
     // [POST] create citizen info
-    .post('/createCitizen', function (req, res, next) {
-        invoke({
-            chaincodeId: 'mycc',
-            fcn: 'setCitizen',
-            args: [
-                req.body.bsn,
-                req.body.firstName,
-                req.body.lastName,
-                req.body.address,
-                req.body.financialSupport,
-                req.body.consent,
-                req.body.municipalityId
-            ]
-        }).then(() => {
-            res.json({'status': 'success'})
-        }).catch(next);
+    .post('/createCitizen', passport.authenticate('jwt', {session: false}), function (req, res, next) {
+        var token = getToken(req.headers);
+        if (token) {
+            // Authorization token was provided
+            var decoded = jwt.decode(token, config.secret);
+
+            // Need this since both MUN & CJIB employees are stored in the same db
+            if (decoded.role !== MUN_ROLE) {
+                res.status(403).json({success: false, msg: 'Authentication failed. User role has no access.'});
+            } else {
+                User.findOne({ where: {username: decoded.username} 
+                }).then(user => {
+                    if (!user) {
+                        res.status(403).json({success: false, msg: 'Authentication failed. User not found.'});
+                    } else {
+                        invoke({
+                            chaincodeId: 'mycc',
+                            fcn: 'setCitizen',
+                            args: [
+                                req.body.bsn,
+                                req.body.firstName,
+                                req.body.lastName,
+                                req.body.address,
+                                req.body.financialSupport,
+                                req.body.consent,
+                                req.body.municipalityId
+                            ]
+                        }).then(() => {
+                            res.json({'status': 'success'})
+                        }).catch(next);
+                    }
+                }).catch(err => {
+                    res.status(500).json({msg: "error", details: err});
+                });
+            }
+        } else {
+            // Authorization token was not provided
+            return res.status(403).send({success: false, msg: 'No token provided.'});
+        }
     })
 
     // [PUT] update citizen info
-    .put('/updateCitizen', function (req, res, next) {
-        invoke({
-            chaincodeId: 'mycc',
-            fcn: 'updateCitizen',
-            args: [
-                req.body.bsn,
-                req.body.financialSupport,
-            ]
-        }).then(() => {
-            res.json({'status': 'success'})
-        }).catch(next);
+    .put('/updateCitizen', passport.authenticate('jwt', {session: false}), function (req, res, next) {
+        var token = getToken(req.headers);
+        if (token) {
+            // Authorization token was provided
+            var decoded = jwt.decode(token, config.secret);
+
+            // Need this since both MUN & CJIB employees are stored in the same db
+            if (decoded.role !== MUN_ROLE) {
+                res.status(403).json({success: false, msg: 'Authentication failed. User role has no access.'});
+            } else {
+                User.findOne({ where: {username: decoded.username} 
+                }).then(user => {
+                    if (!user) {
+                        res.status(403).json({success: false, msg: 'Authentication failed. User not found.'});
+                    } else {
+                        invoke({
+                            chaincodeId: 'mycc',
+                            fcn: 'updateCitizen',
+                            args: [
+                                req.body.bsn,
+                                req.body.financialSupport,
+                            ]
+                        }).then(() => {
+                            res.json({'status': 'success'})
+                        }).catch(next);
+                    }
+                }).catch(err => {
+                    res.status(500).json({msg: "error", details: err});
+                });
+            }
+        } else {
+            // Authorization token was not provided
+            return res.status(403).send({success: false, msg: 'No token provided.'});
+        }
     })
 
     // [DELETE] delete citizen info
-    .delete('/deleteCitizen', function (req, res, next) {
-        invoke({
-            chaincodeId: 'mycc',
-            fcn: 'deleteCitizen',
-            args: [
-                req.body.bsn
-            ]
-        }).then(() => {
-            res.json({'status': 'success'})
-        }).catch(next);
+    .delete('/deleteCitizen', passport.authenticate('jwt', {session: false}), function (req, res, next) {
+        var token = getToken(req.headers);
+        if (token) {
+            // Authorization token was provided
+            var decoded = jwt.decode(token, config.secret);
+
+            // Need this since both MUN & CJIB employees are stored in the same db
+            if (decoded.role !== MUN_ROLE) {
+                res.status(403).json({success: false, msg: 'Authentication failed. User role has no access.'});
+            } else {
+                User.findOne({ where: {username: decoded.username} 
+                }).then(user => {
+                    if (!user) {
+                        res.status(403).json({success: false, msg: 'Authentication failed. User not found.'});
+                    } else {
+                        invoke({
+                            chaincodeId: 'mycc',
+                            fcn: 'deleteCitizen',
+                            args: [
+                                req.body.bsn
+                            ]
+                        }).then(() => {
+                            res.json({'status': 'success'})
+                        }).catch(next);
+                    }
+                }).catch(err => {
+                    res.status(500).json({msg: "error", details: err});
+                });
+            }
+        } else {
+            // Authorization token was not provided
+            return res.status(403).send({success: false, msg: 'No token provided.'});
+        }
     });
+
+getToken = function (headers) {
+    if (headers && headers.authorization) {
+        var parted = headers.authorization.split(' ');
+        if (parted.length === 2) {
+            return parted[1];
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+};
 
 app.use('/api', router);
 
@@ -280,7 +423,7 @@ app.use(function (err, req, res, next) {
     })
 });
 
-const server = app.listen(8080, function () {
+const server = app.listen(port, function () {
     const port = server.address().port;
     console.log("Listening at http://localhost:%s", port)
 });

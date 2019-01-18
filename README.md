@@ -74,7 +74,7 @@ foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123",
 
 #### Query chaincode on the network
 ```console
-foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123"]}'
+foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123", "100", "2"]}'
 ```
 
 #### Query actual blocks on the blockchain
@@ -97,14 +97,59 @@ To retrieve the newest block added:
 foo@bar:~$ make query-newest-block
 ```
 
-### REST-API server
-All in one:
+# PostgreSQL
+
+The REST Server described in the next section uses a PostgreSQL to authenticate requests. 
+ In other words, a database that consists of cjib and municipalities users is needed.
+
+## 1. Create database
+Create a PostgreSQL database with the following attributes:
+
+```
+{
+    database: 'hyperdebt',
+    username: 'postgres',
+    password: 'postgres',
+    host: 'localhost'
+}
+```
+
+## 2. Create "users" table
+
+Once the PostgreSQL instance is up execute the following to create the table.
+```sql
+create table users
+(
+    id       serial       not null constraint user_pkey primary key,
+    username varchar(100) not null,
+    password varchar(100) not null,
+    role     integer      not null
+);
+
+alter table users
+  owner to postgres;
+```
+
+## 3. Store "dummy" users
+Execute the following to create 2 dummy users in the database (one for CJIB and one for the municipalities). The password for both of these users is "admin".
+
+```sql
+insert into users values (0, 'cjib_admin', '$2y$10$UfzmabEBmKu/ho7029xJwey0wvm6em8N1TISxyIEzagQ7PM4cEnri
+', 0);
+insert into users values (0, 'mun_admin', '$2y$10$UfzmabEBmKu/ho7029xJwey0wvm6em8N1TISxyIEzagQ7PM4cEnri
+', 1);
+
+```
+
+# REST Server
+
+To startup the rest server, run the following command:
 ```console
 foo@bar:~$ make start-rest
 ```
 
-Step by step:
-#### Create admin
+The command mentioned above does the following 2 [Step by step]:
+## 1. Create admin
 ```console
 foo@bar:~$ node enrollAdmin.js
  Store path:/home/y/Documents/CS4160 Blockchain Engineering/blockchain/rest-api/hfc-key-store
@@ -112,62 +157,65 @@ Successfully loaded admin from persistence
 Assigned the admin user to the fabric client ::{"name":"admin","mspid":"Org1MSP","roles":null,"affiliation":"","enrollmentSecret":"","enrollment":{"signingIdentity":"524ff911a22b85000770417a9a65c827a85a4f2f460c8600afdda607285901d1","identity":{"certificate":"-----BEGIN CERTIFICATE-----\nMIICATCCAaigAwIBAgIUBV8vgJxIOqM3oz8wGB0WRpduPUQwCgYIKoZIzj0EAwIw\nczELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNh\nbiBGcmFuY2lzY28xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMT\nE2NhLm9yZzEuZXhhbXBsZS5jb20wHhcNMTgxMjI4MTgwNTAwWhcNMTkxMjI4MTgx\nMDAwWjAhMQ8wDQYDVQQLEwZjbGllbnQxDjAMBgNVBAMTBWFkbWluMFkwEwYHKoZI\nzj0CAQYIKoZIzj0DAQcDQgAEONZh0CyVv9uNUbsJRB28XDrtCZ/mqpqmMAgL8cVZ\nNhbFGOayBvGH97pvQBz3Ysi2eulM39zaWNsBUuPjZMQBs6NsMGowDgYDVR0PAQH/\nBAQDAgeAMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFNHW0KdSzkEyAyjbq066HcwC\n/W74MCsGA1UdIwQkMCKAIEqwliofTiy1P6NkG3EPehypJqWmlG1wglbhCxS/NoqS\nMAoGCCqGSM49BAMCA0cAMEQCIBKkzsOYLkASivnmLJyFUS5B1z/XQvxfyAM69z5Q\neCbVAiA4qmCrorn5Jy1ALitu5QdHVLmyAlum4FCN6cSX8aFabg==\n-----END CERTIFICATE-----\n"}}}
 ```
 
-#### Start server
+## 2. Start server
 ```console
 foo@bar:~$ node rest-client.js
 Store path:.../rest-api/hfc-key-store
 Listening at http://localhost:8081
 ```
 
-#### Invoke and Query server
+## Authenticate and interact with REST server
 
-__**Create Citizen**__
+To verify the REST Server is up and running, you can use **Postman** to invoke HTTP requests.
 
-```console
-foo@bar:~$ http POST localhost:8080/api/createCitizen bsn='3' firstName='James' lastName='Doe' address='Street 5' financialSupport='1000' consent='true' municipalityId='1' --json
+### 1. Get yourself authenticated 
+
+**Postman URL:** http://localhost:8080/authenticate \
+**HTTP method:** POST \
+**HTTP body:** Use *x-www-form-urlencoded* and add the following to the body:
+
+```json 
+name -> mun_admin 
+password -> admin
 ```
 
-__**Response**__
+The following request will return a **token**. Use this for the next requests!
 
-```console
-HTTP/1.1 200 OK
-Connection: keep-alive
-Content-Length: 20
-Content-Type: application/json; charset=utf-8
-Date: Sun, 30 Dec 2018 19:06:29 GMT
-ETag: W/"14-Y53wuE/mmbSikKcT/WualL1N65U"
-X-Powered-By: Express
+**Note!** If you want to query a citizen the **cjib_admin** should be used for authentication.
 
+### 2. Create a citizen
+
+**Postman URL:** http://localhost:8080/createCitizen \
+**HTTP method:** POST \
+**HTTP headers:** Add the following pair: 
+```
 {
-    "status": "success"
+    Authorization -> TOKEN_THAT_WAS_RETURNED
 }
 ```
 
-__**Query Citizen**__
+**HTTP body:** 
 
-```console
-foo@bar:~$ http GET localhost:8080/api/getCitizen?bsn=3
+```json
+{
+    "bsn": "123788888",
+    "firstName": "Angelos",
+    "lastName": "NotSaying",
+    "address": "Blablah 52",
+    "financialSupport": "1000",
+    "consent": "true",
+    "municipalityId": "1"
+}
+
 ```
 
-__**Response**__
+### 2. Query Citizen
 
-```console
-HTTP/1.1 200 OK
-Connection: keep-alive
-Content-Length: 95
-Content-Type: application/json; charset=utf-8
-Date: Sun, 30 Dec 2018 19:08:58 GMT
-ETag: W/"5f-i6rnL/mRxMJYbCoyuBiOXgE8y+M"
-X-Powered-By: Express
-
+**Postman URL:** http://localhost:8080/getCitizen?bsn=3&fineAmount=10020 \
+**HTTP method:** GET \
+**HTTP headers:** Add the following pair: 
+```
 {
-    "address": "Street 5",
-    "bsn": "3",
-    "consent": "true",
-    "docType": "citizen",
-    "financialSupport": "1000",
-    "firstName": "James",
-    "lastName": "Doe",
-    "municipalityId": "1"
+    Authorization -> TOKEN_THAT_WAS_RETURNED
 }
 ```

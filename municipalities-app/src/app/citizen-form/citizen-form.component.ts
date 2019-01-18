@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ApiService } from '../api.service';
-import { PersonInfo } from '../../PersonInfo';
+import { ApiService } from '../_services/api.service';
 
 @Component({
   selector: 'app-citizen-form',
