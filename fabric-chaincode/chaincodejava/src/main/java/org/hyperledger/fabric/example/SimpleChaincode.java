@@ -93,25 +93,10 @@ public class SimpleChaincode extends ChaincodeBase {
 
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
 
-
         if (!citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
-        /*try {
-            citizenInfo = byteArrayToObject(citizenInfoByte);
-        } catch (IOException e) {
-            return newErrorResponse("Conversion Error");
-        } catch (ClassNotFoundException e) {
-            return newErrorResponse("Class not found");
-        }
-
-        if (citizenInfo != null) {
-            return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
-        }
-*/
-
-        CitizenInfo newCitizenInfo = new CitizenInfo(bsn, firstName, lastName, address, financialSupport, consent, municipalityId);
         TTPMessage message = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
 
         String serializedTtp;
@@ -125,13 +110,13 @@ public class SimpleChaincode extends ChaincodeBase {
                 financialSupport, consent, municipalityId, serializedTtp);
 
         try {
-            byte[] cit = objectToByteArray(newCitizenInfo);
+            byte[] cit = objectToByteArray(citizenInfo);
             stub.putPrivateData("citizenCollection", bsn, cit);
         } catch (IOException e) {
             return newErrorResponse("Conversion Error " + e);
         }
 
-        return newSuccessResponse("citizen added succesfully");
+        return newSuccessResponse("citizen added successfully");
     }
 
     private Response getCitizen(ChaincodeStub stub, List<String> args) {
@@ -141,7 +126,6 @@ public class SimpleChaincode extends ChaincodeBase {
         String bsn = args.get(0);
         String fineAmount = args.get(1);
         String months = args.get(2);
-
 
         if (bsn == null) {
             return newErrorResponse("Bsn was not provided");
