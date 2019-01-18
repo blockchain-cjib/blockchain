@@ -105,32 +105,97 @@ public class SimpleChaincode extends ChaincodeBase {
     }
 
     private Response getCitizen(ChaincodeStub stub, List<String> args) {
+        if (args.size() < 2 || args.size() >3) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 2-3");
+        }
+        String bsn = args.get(0);
+        String fineAmount = args.get(1);
+        String months = args.get(2);
+
+
+        if (bsn == null) {
+            return newErrorResponse("Bsn was not provided");
+        }
+
+        if (fineAmount == null) {
+            return newErrorResponse("Fine amount was not provided");
+        }
+
+        CitizenInfo citizenInfo = new CitizenInfo();
+        citizenInfo = stub.getPrivateData("citizenCollection", bsn);
+
+        if (citizenInfo == null) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist", bsn));
+        }
+
+        Integer financialSupport = citizenInfo.getFinancialSupport();
+        _logger.info(String.format("Query Response:\nBSN: %s, financialSupport: %s\n", bsn, financialSupport));
         return newSuccessResponse();
+        return newSuccessResponse(citizenInfo);
+
     }
 
     private Response deleteCitizen(ChaincodeStub stub, List<String> args) {
-//        if (args.size() != 1) {
-//            return newErrorResponse("Incorrect number of arguments. Expecting 1");
-//        }
-//        String key = args.get(0);
-//        // Delete the key from the state in ledger
-//        stub.delState(key);
+        if (args.size() != 1) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+        }
+
+        String key = args.get(0);
+        if (key.length() <= 0) {
+            return newErrorResponse("1st argument (BSN) must be a non-empty string");
+        }
+
+        //String citizen  = stub.getStringState(bsn);
+        //String citizen  = stub.getPrivateData("citizenCollection", bsn);
+        CitizenInfo citizenInfo = new CitizenInfo();
+        citizenInfo = stub.getPrivateData("citizenCollection", bsn);
+        if (citizenInfo == null) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist", bsn));
+        }
+
+        //stub.delState(bsn);
+        stub.delPrivateData("citizenCollection", bsn);
+        return newSuccessResponse();
+        _logger.info(String.format("citizen deleted with bsn number: %s", bsn));
         return newSuccessResponse();
     }
 
     private Response updateCitizen(ChaincodeStub stub, List<String> args) {
-//        if (args.size() != 1) {
-//            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
-//        }
-//        String key = args.get(0);
-//        //byte[] stateBytes
-//        String val	= stub.getStringState(key);
-//        if (val == null) {
-//            return newErrorResponse(String.format("Error: state for %s is null", key));
-//        }
-//        _logger.info(String.format("Query Response:\nName: %s, Amount: %s\n", key, val));
-//        return newSuccessResponse(val, ByteString.copyFrom(val, UTF_8).toByteArray());
-        return newSuccessResponse();
+        if (args.size() != 2) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 2");
+        }
+
+        String bsn = args.get(0);
+         if (key.length() <= 0) {
+            return newErrorResponse("1st argument (BSN) must be a non-empty string");
+        }
+
+        //String citizen = stub.getStringState(bsn);
+        CitizenInfo citizenInfo = new CitizenInfo();
+        citizenInfo = stub.getPrivateData("citizenCollection", bsn);
+        if (citizenInfo == null) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+        }
+
+        Integer newFinancialSupport = Integer.parseInt(args.get(1));
+        //here change the financial support value of citizen object
+        citizenInfo.setFinancialSupport(newFinancialSupport);
+
+        try {
+            byte[] cit = objectToByteArray(citizenInfo);
+            stub.putPrivateData("citizenCollection", bsn, cit);
+        } catch (IOException e) {
+            return newErrorResponse("Conversion Error");
+        }
+
+        _logger.info(String.format("new financialSupport of citizen: %s", newFinancialSupport));
+
+        stub.putPrivateData("citizenCollection", bsn, citizenInfo);
+
+        _logger.info("Update complete");
+
+        return newSuccessResponse("update finished successfully", ByteString.copyFrom(bsn + ": " + newFinancialSupport, UTF_8).toByteArray());
+
     }
 
     private byte[] objectToByteArray(CitizenInfo citizenInfo) throws IOException {
