@@ -224,22 +224,23 @@ router.use(function (req, res, next) {
                         // query the chaincode
                         query({
                             chaincodeId: 'mycc',
-                            fcn: 'getCitizen',
+                            fcn: 'getCitizenCJIB',
                             args: params
                         }).then(fetchedCitizen => {
-                            let citizenInfo = JSON.parse(fetchedCitizen.toString())
-                            let response = {
-                                answer: false
-                            }
-                            let financialSupport = citizenInfo.financialSupport;
+                            let citizenInfo = JSON.parse(fetchedCitizen.toString());
+                            // TODO FIX IN APP UI
+                            // let response = {
+                            //     answer: false
+                            // };
+                            // let financialSupport = citizenInfo.financialSupport;
+                            //
+                            // if (requestMonths) {
+                            //     response.answer = (financialSupport * requestMonths >= requestFineAmount);
+                            // } else {
+                            //     response.answer = (financialSupport >= requestFineAmount);
+                            // }
     
-                            if (requestMonths) {
-                                response.answer = (financialSupport * requestMonths >= requestFineAmount);
-                            } else {
-                                response.answer = (financialSupport >= requestFineAmount);
-                            }
-    
-                            res.json(response);
+                            res.json(citizenInfo);
                         }).catch(next);
                     }
                 }).catch(err => {

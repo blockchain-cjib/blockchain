@@ -26,6 +26,6 @@ shadowJar {
     classifier = null
 
     manifest {
-        attributes 'Main-Class': 'org.hyperledger.fabric.example.SimpleChaincode'
+        attributes 'Main-Class': 'org.hyperledger.fabric.example.Chaincode'
     }
 }

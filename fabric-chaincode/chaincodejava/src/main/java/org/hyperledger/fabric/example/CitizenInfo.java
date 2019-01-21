@@ -1,5 +1,6 @@
 package org.hyperledger.fabric.example;
 
+import com.ing.blockchain.zk.dto.BoudotRangeProof;
 import com.ing.blockchain.zk.dto.TTPMessage;
 
 import java.io.Serializable;
@@ -10,25 +11,30 @@ public class CitizenInfo implements Serializable {
     private String lastName;
     private String address;
     private Integer financialSupport;
+    private Integer fine;
     private Boolean consent;
     private Integer municipalityId;
-    private TTPMessage ttpMessage;
+    private TTPMessage commitment;
+    private BoudotRangeProof boudotRangeProof;
 
     public CitizenInfo() {
     }
 
     public CitizenInfo(String bsn, String firstName,
                        String lastName, String address,
-                       Integer financialSupport, Boolean consent,
-                       Integer municipalityId, TTPMessage ttpMessage) {
+                       Integer financialSupport, Integer fine, Boolean consent,
+                       Integer municipalityId, TTPMessage commitment,
+                       BoudotRangeProof boudotRangeProof) {
         this.bsn = bsn;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.financialSupport = financialSupport;
+        this.fine = fine;
         this.consent = consent;
         this.municipalityId = municipalityId;
-        this.ttpMessage = ttpMessage;
+        this.commitment = commitment;
+        this.boudotRangeProof = boudotRangeProof;
     }
 
     public String getBsn() {
@@ -71,6 +77,14 @@ public class CitizenInfo implements Serializable {
         this.financialSupport = financialSupport;
     }
 
+    public Integer getFine() {
+        return fine;
+    }
+
+    public void setFine(Integer fine) {
+        this.fine = fine;
+    }
+
     public Boolean getConsent() {
         return consent;
     }
@@ -87,12 +101,20 @@ public class CitizenInfo implements Serializable {
         this.municipalityId = municipalityId;
     }
 
-    public TTPMessage getTtpMessage() {
-        return ttpMessage;
+    public TTPMessage getCommitment() {
+        return commitment;
     }
 
-    public void setTtpMessage(TTPMessage ttpMessage) {
-        this.ttpMessage = ttpMessage;
+    public void setCommitment(TTPMessage commitment) {
+        this.commitment = commitment;
+    }
+
+    public BoudotRangeProof getBoudotRangeProof() {
+        return boudotRangeProof;
+    }
+
+    public void setBoudotRangeProof(BoudotRangeProof boudotRangeProof) {
+        this.boudotRangeProof = boudotRangeProof;
     }
 
     @Override

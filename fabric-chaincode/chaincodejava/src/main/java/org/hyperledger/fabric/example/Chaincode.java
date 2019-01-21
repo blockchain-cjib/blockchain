@@ -24,9 +24,9 @@ import org.json.JSONObject;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class SimpleChaincode extends ChaincodeBase {
+public class Chaincode extends ChaincodeBase {
 
-    private static Log _logger = LogFactory.getLog(SimpleChaincode.class);
+    private static Log _logger = LogFactory.getLog(Chaincode.class);
 
     @Override
     public Response init(ChaincodeStub stub) {
@@ -40,35 +40,38 @@ public class SimpleChaincode extends ChaincodeBase {
             _logger.info("Invoke java simple chaincode");
             String func = stub.getFunction();
             List<String> params = stub.getParameters();
-            if (func.equals("setCitizen")) {
-                return setCitizen(stub, params);
+            switch (func) {
+                case "setCitizen":
+                    return setCitizen(stub, params);
+                case "getCitizenMun":
+                    return getCitizenMun(stub, params);
+                case "getCitizenCJIB":
+                    return getCitizenCJIB(stub, params);
+                case "updateCitizen":
+                    return updateCitizen(stub, params);
+                case "deleteCitizen":
+                    return deleteCitizen(stub, params);
+                default:
+                    return newErrorResponse("Invalid invoke function name. Expecting one of: [\"setCitizen\", " +
+                            "\"getCitizenMun\", \"getCitizenCJIB\", \"updateCitizen\", \"deleteCitizen\"]");
             }
-            if (func.equals("getCitizen")) {
-                return getCitizen(stub, params);
-            }
-            if (func.equals("updateCitizen")) {
-                return updateCitizen(stub, params);
-            }
-            if (func.equals("deleteCitizen")) {
-                return deleteCitizen(stub, params);
-            }
-            return newErrorResponse("Invalid invoke function name. Expecting one of: [\"invoke\", \"delete\", \"query\"]");
         } catch (Throwable e) {
             return newErrorResponse(e);
         }
     }
 
     private Response setCitizen(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 7) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 7");
+        if (args.size() != 8) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 8");
         }
         String bsn = args.get(0);
         String firstName = args.get(1);
         String lastName = args.get(2);
         String address = args.get(3);
         String financialSupportStr = args.get(4);
-        String consentStr = args.get(5);
-        String municipalityIdStr = args.get(6);
+        String fineStr = args.get(5);
+        String consentStr = args.get(6);
+        String municipalityIdStr = args.get(7);
 
         if (bsn == null) {
             return newErrorResponse("Bsn was not provided");
@@ -85,6 +88,9 @@ public class SimpleChaincode extends ChaincodeBase {
         if (financialSupportStr == null) {
             return newErrorResponse("Financial Support was not provided");
         }
+        if (fineStr == null) {
+            return newErrorResponse("Fine amount was not provided");
+        }
         if (consentStr == null) {
             return newErrorResponse("Consent was not provided");
         }
@@ -93,6 +99,7 @@ public class SimpleChaincode extends ChaincodeBase {
         }
 
         Integer financialSupport = Integer.parseInt(financialSupportStr);
+        Integer fine = Integer.parseInt(fineStr);
         Integer municipalityId = Integer.parseInt(municipalityIdStr);
         Boolean consent = (consentStr.equals("true"));
 
@@ -102,9 +109,12 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
-        TTPMessage message = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
+        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
+        BoudotRangeProof rangeProof = RangeProof
+                .calculateRangeProof(ttpMessage, ClosedRange.of("0", financialSupport.toString()));
+
         CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address,
-                financialSupport, consent, municipalityId, message);
+                financialSupport, fine, consent, municipalityId, ttpMessage, rangeProof);
 
         try {
             byte[] cit = objectToByteArray(citizenInfo);
@@ -116,20 +126,14 @@ public class SimpleChaincode extends ChaincodeBase {
         return newSuccessResponse("citizen added successfully");
     }
 
-    private Response getCitizen(ChaincodeStub stub, List<String> args) {
-        if (args.size() < 2 || args.size() > 3) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 2-3");
+    private Response getCitizenMun(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 1) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 1");
         }
-        String bsn = args.get(0);
-        String fineAmount = args.get(1);
-        String months = args.get(2);
 
+        String bsn = args.get(0);
         if (bsn == null) {
             return newErrorResponse("Bsn was not provided");
-        }
-
-        if (fineAmount == null) {
-            return newErrorResponse("Fine amount was not provided");
         }
 
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
@@ -145,35 +149,51 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse("Conversion Error " + e);
         }
 
-        Integer financialSupport = citizenInfo.getFinancialSupport();
-        _logger.info(String.format("Query Response:\nBSN: %s, financialSupport: %s\n", bsn, financialSupport));
-
-        TTPMessage ttpMessage = citizenInfo.getTtpMessage();
-        BoudotRangeProof rangeProof = RangeProof
-                .calculateRangeProof(ttpMessage, ClosedRange.of("0", financialSupport.toString()));
-
-        ObjectMapper mapper = new ObjectMapper();
-        String serializedCommitment;
-        String serializedProof;
+        String response;
         try {
-            serializedCommitment = mapper.writeValueAsString(citizenInfo.getTtpMessage());
-            _logger.info("Proof: " + serializedCommitment);
-            serializedProof = mapper.writeValueAsString(rangeProof);
-            _logger.info("Proof: " + serializedProof);
+            response = buildCitizenResponse(citizenInfo)
+                    .put("financialSupport", citizenInfo.getFinancialSupport())
+                    .toString();
         } catch (JsonProcessingException e) {
             return newErrorResponse(e);
         }
+        _logger.info(response);
 
-        String response = new JSONObject()
-                .put("bsn", citizenInfo.getBsn())
-                .put("firstName", citizenInfo.getFirstName())
-                .put("lastName", citizenInfo.getFirstName())
-                .put("address", citizenInfo.getAddress())
-                .put("financialSupport", citizenInfo.getFinancialSupport())
-                .put("consent", citizenInfo.getConsent())
-                .put("municipalityId", citizenInfo.getMunicipalityId())
-                .put("commitment", new JSONObject(serializedCommitment))
-                .put("proof", new JSONObject(serializedProof)).toString();
+        return newSuccessResponse("success", ByteString.copyFrom(response, UTF_8).toByteArray());
+    }
+
+    private Response getCitizenCJIB(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 1) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+        }
+
+        String bsn = args.get(0);
+//        String fineAmount = args.get(1);
+//        String months = args.get(2);
+
+        if (bsn == null) {
+            return newErrorResponse("Bsn was not provided");
+        }
+
+        String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
+        if (citizenInfoStr.equals("")) {
+            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+        }
+
+        CitizenInfo citizenInfo;
+        byte[] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+        try {
+            citizenInfo = byteArrayToObject(citizenInfoByte);
+        } catch (IOException | ClassNotFoundException e) {
+            return newErrorResponse("Conversion Error " + e);
+        }
+
+        String response;
+        try {
+            response = buildCitizenResponse(citizenInfo).toString();
+        } catch (JsonProcessingException e) {
+            return newErrorResponse(e);
+        }
         _logger.info(response);
 
         return newSuccessResponse("success", ByteString.copyFrom(response, UTF_8).toByteArray());
@@ -190,17 +210,8 @@ public class SimpleChaincode extends ChaincodeBase {
         }
 
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
-
         if (citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
-        }
-
-        CitizenInfo citizenInfo = new CitizenInfo();
-        byte[] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
-        try {
-            citizenInfo = byteArrayToObject(citizenInfoByte);
-        } catch (IOException | ClassNotFoundException e) {
-            return newErrorResponse("Conversion Error " + e);
         }
 
         //stub.delState(bsn);
@@ -226,7 +237,7 @@ public class SimpleChaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
-        CitizenInfo citizenInfo = new CitizenInfo();
+        CitizenInfo citizenInfo;
         byte[] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
         try {
             citizenInfo = byteArrayToObject(citizenInfoByte);
@@ -252,7 +263,24 @@ public class SimpleChaincode extends ChaincodeBase {
         _logger.info("Update complete");
 
         return newSuccessResponse("update finished successfully", ByteString.copyFrom(bsn + ": " + newFinancialSupport, UTF_8).toByteArray());
+    }
 
+    private JSONObject buildCitizenResponse(CitizenInfo citizenInfo) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        String serializedCommitment = mapper.writeValueAsString(citizenInfo.getCommitment());
+        _logger.info("Proof: " + serializedCommitment);
+        String serializedProof = mapper.writeValueAsString(citizenInfo.getBoudotRangeProof());
+        _logger.info("Proof: " + serializedProof);
+
+        return new JSONObject()
+                .put("bsn", citizenInfo.getBsn())
+                .put("firstName", citizenInfo.getFirstName())
+                .put("lastName", citizenInfo.getFirstName())
+                .put("address", citizenInfo.getAddress())
+                .put("consent", citizenInfo.getConsent())
+                .put("municipalityId", citizenInfo.getMunicipalityId())
+                .put("commitment", new JSONObject(serializedCommitment))
+                .put("proof", new JSONObject(serializedProof));
     }
 
     private byte[] objectToByteArray(CitizenInfo citizenInfo) throws IOException {
@@ -263,7 +291,7 @@ public class SimpleChaincode extends ChaincodeBase {
         return bos.toByteArray();
     }
 
-    public static CitizenInfo byteArrayToObject(byte[] data) throws IOException, ClassNotFoundException {
+    private static CitizenInfo byteArrayToObject(byte[] data) throws IOException, ClassNotFoundException {
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         ObjectInputStream is = new ObjectInputStream(in);
         CitizenInfo obj = (CitizenInfo) is.readObject();
@@ -273,6 +301,6 @@ public class SimpleChaincode extends ChaincodeBase {
 
     public static void main(String[] args) {
         System.out.println("OpenSSL avaliable: " + OpenSsl.isAvailable());
-        new SimpleChaincode().start(args);
+        new Chaincode().start(args);
     }
 }

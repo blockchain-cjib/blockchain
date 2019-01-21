@@ -1,11 +1,9 @@
-# Hyperdebt-network
+# Hyperdebt blockchain network
+This is the repository used for the Hyperdebt blockchain network. 
 
-#### Switch between development and real network
-Switching is done by setting the make parameter `FABRIC_ROOT_DIR`
-to either `fabric-network-dev` or `fabric-network`. So for example:
-```console
-foo@bar:~$ make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network
-```
+### Starting the network
+Switch between development and production network by setting the parameter `FABRIC_ROOT_DIR` to 
+either `fabric-network-dev` or `fabric-network`.
 
 #### Initialize configuration
 ```console
@@ -17,6 +15,9 @@ Leave terminal open
 ```console
 foo@bar:~$ make fabric-start-network FABRIC_ROOT_DIR=fabric-network-dev
 ```
+
+Now for the real network it automatically installs the chaincode and its ready to invoke functions on it. For the 
+development network follow the steps below.
 
 #### Installing and upgrading chaincode on the network
 For each upgrade we need to restart the chaincode debugger AND upgrade the network. Because doing this manually 
@@ -60,21 +61,34 @@ Invoke with custom arguments:
 
 To add a new citizen: 
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen","123","James","Delft", "Street 5", "1000", "true", "1"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen", "1234", "James", "Brown", "New Street 5 Delft", "100", "200", "true", "1"]}'
+docker exec -it cli /bin/bash -c \
+    'peer chaincode invoke -n mycc -c '\''{"Args":["setCitizen", "1234", "James", "Brown", "New Street 5 Delft", "100", "200", "true", "1"]}'\'' -C mychannel'
+2019-01-21 14:18:54.451 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (mychannel) orderer endpoint: orderer.example.com:7050
+2019-01-21 14:18:56.411 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 message:"citizen added successfully"
 ```
+
+To get all information about a citizen:
+```console
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["getCitizenMun", "1234"]}'
+docker exec -it cli /bin/bash -c \
+	'peer chaincode invoke -n mycc -c '\''{"Args":["getCitizenMun", "1234"]}'\'' -C mychannel'
+2019-01-21 14:20:03.043 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (mychannel) orderer endpoint: orderer.example.com:7050
+2019-01-21 14:20:05.310 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 message:"success" payload:"{\"firstName\":\"James\",\"lastName\":\"James\",\"municipalityId\":1,\"address\":\"New Street 5 Delft\",\"commitment\":{\"x\":100,\"commitment\":{\"commitmentValue\":\"10827299369169951217855069212743....
+```
+
 To delete an existing citizen:
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen","123"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen","1234"]}'
+2019-01-21 13:47:02.106 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (mychannel) orderer endpoint: orderer.example.com:7050
+2019-01-21 13:47:02.136 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200
 ```
+
 To update financial support information of an existing citizen:
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","123", "2000"]}'
-```
-
-
-#### Query chaincode on the network
-```console
-foo@bar:~$ make fabric-chaincode-query CC_ARGS='{"Args":["getCitizen","123", "100", "2"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","1243", "2000"]}'
+2019-01-21 13:48:41.443 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (mychannel) orderer endpoint: orderer.example.com:7050
+2019-01-21 13:48:41.487 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 message:"update finished successfully" payload:"1234: 200"
 ```
 
 #### Query actual blocks on the blockchain
