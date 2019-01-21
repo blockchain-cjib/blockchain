@@ -86,7 +86,7 @@ foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen","1234"
 
 To update financial support information of an existing citizen:
 ```console
-foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","1243", "2000"]}'
+foo@bar:~$ make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen","1234", "2000"]}'
 2019-01-21 13:48:41.443 UTC [chaincodeCmd] InitCmdFactory -> INFO 001 Retrieved channel (mychannel) orderer endpoint: orderer.example.com:7050
 2019-01-21 13:48:41.487 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 message:"update finished successfully" payload:"1234: 200"
 ```
