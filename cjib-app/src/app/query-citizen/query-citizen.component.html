@@ -27,7 +27,7 @@
                     </select>
                 </div>
             </form>
-            <form *ngIf="selectedType.id !== 2" [formGroup]="queryCitizenForm" (ngSubmit)="onSubmit(f.bsn.value, f.money.value, undefined)">
+            <form *ngIf="selectedType.id !== 2" [formGroup]="queryCitizenForm" (ngSubmit)="onSubmit(f.bsn.value, undefined)">
                 <!-- BSN input -->
                 <div class="form-group">
                     <label for="bsn">Citizen BSN</label>
@@ -38,35 +38,7 @@
                         <div *ngIf="f.bsn.errors.required">BSN is required</div>
                     </div>
                 </div>
-                <!-- Query Type 1 -->
-                <div *ngIf="selectedType.id===1">
-                    <!-- Fine amount input -->
-                    <div class="form-group">
-                        <label for="money">Fine amount</label>
-                        <input type="text" id="money" class="form-control" 
-                            formControlName="money"
-                            [ngClass]="{ 'is-invalid': submitted && f.money.errors }">
-                        <div *ngIf="submitted && f.money.errors" class="invalid-feedback">
-                            <div *ngIf="f.money.errors.required">Fine amount is required</div>
-                            <div *ngIf="f.money.errors.pattern">Fine amount should be numeric</div>
-                        </div>
-                    </div>
-                </div>  
                 
-                <!-- Query Type 3 -->
-                <div *ngIf="selectedType.id===3">
-                    <div class="form-group">
-                        <label for="money">Amount of money (Yearly)</label>
-                        <input type="text" id="money" class="form-control" 
-                            formControlName="money"
-                            [ngClass]="{ 'is-invalid': submitted && f.money.errors }">
-                        <div *ngIf="submitted && f.money.errors" class="invalid-feedback">
-                            <div *ngIf="f.money.errors.required">Amount of money is required</div>
-                            <div *ngIf="f.money.errors.pattern">Fine amount should be numeric</div>
-                        </div>
-                    </div>
-                </div>
-        
                 <button type="submit" class="btn btn-primary">
                     Search 
                     <i [hidden]="loading" class="fa fa-search"></i>
@@ -79,7 +51,7 @@
                     <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
                 </div>
             </form>
-            <form *ngIf="selectedType.id===2" [formGroup]="queryCitizenForm2" (ngSubmit)="onSubmit(f2.bsn.value, f2.money.value, f2.months.value)">
+            <form *ngIf="selectedType.id===2" [formGroup]="queryCitizenForm2" (ngSubmit)="onSubmit(f2.bsn.value, f2.months.value)">
                 <!-- BSN input -->
                 <div class="form-group">
                     <label for="bsn">Citizen BSN</label>
@@ -88,17 +60,6 @@
                             [ngClass]="{ 'is-invalid': submitted && f2.bsn.errors }">
                     <div *ngIf="submitted && f2.bsn.errors" class="invalid-feedback">
                         <div *ngIf="f2.bsn.errors.required">BSN is required</div>
-                    </div>
-                </div>
-                <!-- Fine amount input -->
-                <div class="form-group">
-                    <label for="money">Fine amount</label>
-                    <input type="text" id="money" class="form-control" 
-                        formControlName="money"
-                        [ngClass]="{ 'is-invalid': submitted && f2.money.errors }">
-                    <div *ngIf="submitted && f2.money.errors" class="invalid-feedback">
-                        <div *ngIf="f2.money.errors.required">Fine amount is required</div>
-                        <div *ngIf="f2.money.errors.pattern">Fine amount should be numeric</div>
                     </div>
                 </div>
                 <!-- Number of months input -->

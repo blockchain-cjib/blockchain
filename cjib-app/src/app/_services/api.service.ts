@@ -20,9 +20,8 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  queryCitizenAbilityToPay(bsn, fineAmount, months): Observable<any> {
+  queryCitizenAbilityToPay(bsn, months): Observable<any> {
     httpOptions.params = httpOptions.params.set('bsn', bsn);
-    httpOptions.params = httpOptions.params.set('fineAmount', fineAmount);
     if (months) {
         httpOptions.params = httpOptions.params.set('months', months);
     }

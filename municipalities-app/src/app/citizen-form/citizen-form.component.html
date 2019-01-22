@@ -66,6 +66,17 @@
                         <div *ngIf="f.financialSupport.errors.pattern">Financial Support should be numeric</div>
                     </div>
                 </div>
+                <!-- Fine amount input -->
+                <div class="form-group">
+                    <label for="fineAmount">Fine amount</label>
+                    <input type="text" id="fineAmount" class="form-control" 
+                        formControlName="fineAmount"
+                        [ngClass]="{ 'is-invalid': submitted && f.fineAmount.errors }">
+                    <div *ngIf="submitted && f.fineAmount.errors" class="invalid-feedback">
+                        <div *ngIf="f.fineAmount.errors.required">Fine amount is required</div>
+                        <div *ngIf="f.fineAmount.errors.pattern">Fine amount should be numeric</div>
+                    </div>
+                </div>
                 <!-- Consent checkbox -->
                 <div class="form-check">
                     <input type="checkbox" id="consent" class="form-check-input" 
