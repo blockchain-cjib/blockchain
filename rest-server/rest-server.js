@@ -305,6 +305,7 @@ router.use(function (req, res, next) {
                                 req.body.lastName,
                                 req.body.address,
                                 req.body.financialSupport,
+                                req.body.fineAmount,
                                 req.body.consent,
                                 req.body.municipalityId
                             ]
