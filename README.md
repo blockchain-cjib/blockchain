@@ -148,10 +148,8 @@ alter table users
 Execute the following to create 2 dummy users in the database (one for CJIB and one for the municipalities). The password for both of these users is "admin".
 
 ```sql
-insert into users values (0, 'cjib_admin', '$2y$10$UfzmabEBmKu/ho7029xJwey0wvm6em8N1TISxyIEzagQ7PM4cEnri
-', 0);
-insert into users values (0, 'mun_admin', '$2y$10$UfzmabEBmKu/ho7029xJwey0wvm6em8N1TISxyIEzagQ7PM4cEnri
-', 1);
+insert into users values (0, 'cjib_admin', '$2y$10$hfCVQMmVyKqtYrmPw8nouuMEuuDnzv0PjiWePSYYFmthWdtC6lug6', 0);
+insert into users values (1, 'mun_admin', '$2y$10$hfCVQMmVyKqtYrmPw8nouuMEuuDnzv0PjiWePSYYFmthWdtC6lug6', 1);
 
 ```
 
