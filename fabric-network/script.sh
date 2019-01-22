@@ -18,15 +18,15 @@ CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer channel join -b mychannel.blo
 
 # install the chaincode on peer0
 echo "Installing chaincode peer 0"
-CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
 echo "Installing chaincode peer 1"
-CORE_PEER_ADDRESS=peer1.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+CORE_PEER_ADDRESS=peer1.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
 echo "Installing chaincode peer 2"
-CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
 echo "Installing chaincode peer 3"
-CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
 echo "Installing chaincode peer 4"
-CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
 
 #instantiate the chaincode on peer0
 echo "Instantiating chaincode on peer0"
