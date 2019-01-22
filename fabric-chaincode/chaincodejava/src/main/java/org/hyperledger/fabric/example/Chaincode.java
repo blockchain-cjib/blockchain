@@ -279,9 +279,11 @@ public class Chaincode extends ChaincodeBase {
     private JSONObject buildCitizenResponse(CitizenInfo citizenInfo) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         String serializedCommitment = mapper.writeValueAsString(citizenInfo.getCommitment());
-        _logger.info("Proof: " + serializedCommitment);
+        _logger.info("Commitment: " + serializedCommitment);
         String serializedProof = mapper.writeValueAsString(citizenInfo.getBoudotRangeProof());
         _logger.info("Proof: " + serializedProof);
+        String serializedRange = mapper.writeValueAsString(citizenInfo.getClosedRange());
+        _logger.info("Range: " + serializedRange);
 
         return new JSONObject()
                 .put("bsn", citizenInfo.getBsn())
@@ -292,7 +294,8 @@ public class Chaincode extends ChaincodeBase {
                 .put("municipalityId", citizenInfo.getMunicipalityId())
                 .put("canPay", citizenInfo.getCanPay())
                 .put("commitment", new JSONObject(serializedCommitment))
-                .put("proof", new JSONObject(serializedProof));
+                .put("proof", new JSONObject(serializedProof))
+                .put("range", new JSONObject(serializedRange));
     }
 
     private byte[] objectToByteArray(CitizenInfo citizenInfo) throws IOException {
