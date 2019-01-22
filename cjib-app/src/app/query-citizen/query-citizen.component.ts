@@ -12,7 +12,6 @@ export class QueryCitizenComponent implements OnInit {
     queryCitizenForm2: FormGroup;
 
 	bsn = null;
-	money = null;
 	months = null;
 	selectedType = null;
 	queryTypes = [];
@@ -33,16 +32,14 @@ export class QueryCitizenComponent implements OnInit {
         
         this.queryCitizenForm = this.formBuilder.group({
             bsn: ['', Validators.required],
-            money: ['', [Validators.required, Validators.pattern("^[0-9]*$")]]
         });
         this.queryCitizenForm2 = this.formBuilder.group({
             bsn: ['', Validators.required],
-            money: ['', [Validators.required, Validators.pattern("^[0-9]*$")]],
             months: ['', [Validators.required, Validators.pattern("^[0-9]*$")]]
         });
     }
     
-    onSubmit(bsn, money, months) {
+    onSubmit(bsn, months) {
         this.submitted = true;
 
         if (this.selectedType.id === 2) {
@@ -50,7 +47,7 @@ export class QueryCitizenComponent implements OnInit {
         } else {
             if (this.queryCitizenForm.invalid) return;
         }
-        this.queryCitizenAbilityToPay(bsn, money, months);
+        this.queryCitizenAbilityToPay(bsn, months);
     }
     
     get f() { return this.queryCitizenForm.controls; }
@@ -61,7 +58,6 @@ export class QueryCitizenComponent implements OnInit {
 	}
 
 	queryTypeChanged = function() {
-		this.money = null;
         this.months = null;
         this.submitted = false;
         this.errorAlert = false;
@@ -71,11 +67,11 @@ export class QueryCitizenComponent implements OnInit {
         this.queryCitizenForm2.reset();
 	}
 
-	queryCitizenAbilityToPay = function(bsn, fineAmount, months) {
+	queryCitizenAbilityToPay = function(bsn, months) {
         this.closeAlert();
         this.loading = true;
         
-		this.apiService.queryCitizenAbilityToPay(bsn, fineAmount, months)
+		this.apiService.queryCitizenAbilityToPay(bsn, months)
 		.subscribe(
 			res => this.queryCitizenAbilityToPaySuccessCallback(res),
 			err => this.queryCitizenAbilityToPayFailCallback(err));

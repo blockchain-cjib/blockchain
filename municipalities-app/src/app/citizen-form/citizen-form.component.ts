@@ -22,6 +22,7 @@ export class CitizenFormComponent implements OnInit {
         lastName: undefined,
         address: undefined,
         financialSupport: undefined,
+        fineAmount: undefined,
         consent: 'false',
         municipalityId: this.mockMunicipalityId
     }
@@ -35,6 +36,7 @@ export class CitizenFormComponent implements OnInit {
             lastName: ['', Validators.required],
             address: ['', [Validators.required]],
             financialSupport: ['', [Validators.required, Validators.pattern("^[0-9]*$")]],
+            fineAmount: ['', [Validators.required, Validators.pattern("^[0-9]*$")]],
             consent: [false, [Validators.requiredTrue]]
         });
     }
@@ -64,6 +66,7 @@ export class CitizenFormComponent implements OnInit {
         this.person.lastName = this.f.lastName.value;
         this.person.address = this.f.address.value;
         this.person.financialSupport = this.f.financialSupport.value;
+        this.person.fineAmount = this.f.fineAmount.value;
         this.person.consent = String(this.f.consent.value);
 
         this.apiService.createCitizenInformation(this.person)
