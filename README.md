@@ -215,6 +215,7 @@ The following request will return a **token**. Use this for the next requests!
     "lastName": "NotSaying",
     "address": "Blablah 52",
     "financialSupport": "1000",
+    "fineAmount": "1000",
     "consent": "true",
     "municipalityId": "1"
 }
@@ -223,7 +224,7 @@ The following request will return a **token**. Use this for the next requests!
 
 ### 2. Query Citizen
 
-**Postman URL:** http://localhost:8080/getCitizen?bsn=3&fineAmount=10020 \
+**Postman URL:** http://localhost:8080/getCitizen?bsn=3 \
 **HTTP method:** GET \
 **HTTP headers:** Add the following pair: 
 ```
