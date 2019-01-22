@@ -109,12 +109,23 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
-        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
-        BoudotRangeProof rangeProof = RangeProof
-                .calculateRangeProof(ttpMessage, ClosedRange.of("0", financialSupport.toString()));
 
+        ClosedRange closedRange;
+        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
+        Boolean canPay = fine <= financialSupport;
+        if (!canPay) {
+            fine -= 1;
+            closedRange = ClosedRange.of("0", fine.toString());
+            fine += 1;
+        } else {
+            // TODO
+            closedRange = ClosedRange.of("0", financialSupport.toString());
+        }
+
+        BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
         CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address,
-                financialSupport, fine, consent, municipalityId, ttpMessage, rangeProof);
+                financialSupport, fine, consent, municipalityId,
+                canPay, ttpMessage.getCommitment(), rangeProof, closedRange);
 
         try {
             byte[] cit = objectToByteArray(citizenInfo);

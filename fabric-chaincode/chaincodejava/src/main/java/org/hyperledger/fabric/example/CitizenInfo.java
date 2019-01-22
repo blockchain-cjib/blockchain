@@ -1,6 +1,8 @@
 package org.hyperledger.fabric.example;
 
 import com.ing.blockchain.zk.dto.BoudotRangeProof;
+import com.ing.blockchain.zk.dto.ClosedRange;
+import com.ing.blockchain.zk.dto.Commitment;
 import com.ing.blockchain.zk.dto.TTPMessage;
 
 import java.io.Serializable;
@@ -14,8 +16,10 @@ public class CitizenInfo implements Serializable {
     private Integer fine;
     private Boolean consent;
     private Integer municipalityId;
-    private TTPMessage commitment;
+    private Boolean canPay;
+    private Commitment commitment;
     private BoudotRangeProof boudotRangeProof;
+    private ClosedRange closedRange;
 
     public CitizenInfo() {
     }
@@ -23,8 +27,8 @@ public class CitizenInfo implements Serializable {
     public CitizenInfo(String bsn, String firstName,
                        String lastName, String address,
                        Integer financialSupport, Integer fine, Boolean consent,
-                       Integer municipalityId, TTPMessage commitment,
-                       BoudotRangeProof boudotRangeProof) {
+                       Integer municipalityId, Boolean canPay, Commitment commitment,
+                       BoudotRangeProof boudotRangeProof, ClosedRange closedRange) {
         this.bsn = bsn;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -33,8 +37,10 @@ public class CitizenInfo implements Serializable {
         this.fine = fine;
         this.consent = consent;
         this.municipalityId = municipalityId;
+        this.canPay = canPay;
         this.commitment = commitment;
         this.boudotRangeProof = boudotRangeProof;
+        this.closedRange = closedRange;
     }
 
     public String getBsn() {
@@ -101,11 +107,19 @@ public class CitizenInfo implements Serializable {
         this.municipalityId = municipalityId;
     }
 
-    public TTPMessage getCommitment() {
+    public Boolean getCanPay() {
+        return canPay;
+    }
+
+    public void setCanPay(Boolean canPay) {
+        this.canPay = canPay;
+    }
+
+    public Commitment getCommitment() {
         return commitment;
     }
 
-    public void setCommitment(TTPMessage commitment) {
+    public void setCommitment(Commitment commitment) {
         this.commitment = commitment;
     }
 
@@ -115,6 +129,14 @@ public class CitizenInfo implements Serializable {
 
     public void setBoudotRangeProof(BoudotRangeProof boudotRangeProof) {
         this.boudotRangeProof = boudotRangeProof;
+    }
+
+    public ClosedRange getClosedRange() {
+        return closedRange;
+    }
+
+    public void setClosedRange(ClosedRange closedRange) {
+        this.closedRange = closedRange;
     }
 
     @Override
