@@ -17,20 +17,25 @@ CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer channel join -b mychannel.blo
 CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer channel join -b mychannel.block
 
 # install the chaincode on peer0
+echo "Installing chaincode peer 0 - DUMMY node"
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincode" -v v0 -l node
+echo "Instantiating chaincode on peer0 - DUMMY node"
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n mycc -v v0 -c '{"Args":[""]}' --collections-config chaincode/chaincode/collections_config.json
+
 echo "Installing chaincode peer 0"
-CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v1 -l java
 echo "Installing chaincode peer 1"
-CORE_PEER_ADDRESS=peer1.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
+CORE_PEER_ADDRESS=peer1.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v1 -l java
 echo "Installing chaincode peer 2"
-CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
+CORE_PEER_ADDRESS=peer2.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v1 -l java
 echo "Installing chaincode peer 3"
-CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
+CORE_PEER_ADDRESS=peer3.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v1 -l java
 echo "Installing chaincode peer 4"
-CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v0 -l java
+CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode install -n mycc -p "/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode/chaincodejava" -v v1 -l java
 
 #instantiate the chaincode on peer0
 echo "Instantiating chaincode on peer0"
-CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n mycc -v v0 -c '{"Args":[""]}' --collections-config chaincode/chaincode/collections_config.json
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode upgrade -o orderer.example.com:7050 -C mychannel -n mycc -v v1 -c '{"Args":[""]}' --collections-config chaincode/chaincode/collections_config.json
 
 
 
