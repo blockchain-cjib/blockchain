@@ -10,6 +10,7 @@ DOCKER_CRYPTO_DIR=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peer
 CHANNEL_NAME=mychannel
 CC_ARGS={"Args":[""]}
 BLOCK_NUMBER=0
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -93,7 +94,7 @@ fabric-chaincode-upgrade:
 # Executes the chaincode function 'setCitizen' with arguments "123","James","Delft", "Street 5"
 fabric-chaincode-invoke:
 	docker exec -it cli /bin/bash -c \
-		'peer chaincode invoke -n mycc -c '\''$(CC_ARGS)'\'' -C mychannel'
+		'CORE_PEER_ADDRESS=$(CORE_PEER_ADDRESS) peer chaincode invoke -n mycc -c '\''$(CC_ARGS)'\'' -C mychannel'
 
 # Query some data on the blockchain, querying is done to retriev some information from the blockchain
 #
@@ -101,7 +102,7 @@ fabric-chaincode-invoke:
 # Executes the chaincode function 'getCitizen', with argument '123'
 fabric-chaincode-query:
 	docker exec -it cli /bin/bash -c \
-			'peer chaincode query -n mycc -c '\''$(CC_ARGS)'\'' -C mychannel'
+			'CORE_PEER_ADDRESS=$(CORE_PEER_ADDRESS) peer chaincode query -n mycc -c '\''$(CC_ARGS)'\'' -C mychannel'
 
 # Combo command to run multiple of above commamds at once
 fabric-dev-all-instantiate:
