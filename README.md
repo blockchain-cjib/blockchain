@@ -1,6 +1,23 @@
 # Hyperdebt blockchain network
 This is the repository used for the Hyperdebt blockchain network. 
 
+### Requirements
+* make
+* docker
+* docker-compose
+* npm
+* node
+
+Development / testing 
+* tmux (dev network)
+* Chrome (testing)
+
+### Tests
+All tests can be ran by executing (Chrome required for angular front-end testing).
+```console
+foo@bar:~$ make test
+```
+
 ### Starting the network
 Switch between development and production network by setting the parameter `FABRIC_ROOT_DIR` to 
 either `fabric-network-dev` or `fabric-network`.
