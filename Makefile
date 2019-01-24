@@ -173,7 +173,7 @@ start-municipalities-app:
 	npm install && \
 	npm start
 
-test-blockchain:
+unit-test-blockchain:
 	cd fabric-network && docker-compose down
 
 	make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network
@@ -212,9 +212,12 @@ test-blockchain:
 	# Test delete citizen
 	make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen", "1234"]}'
 
+	# Test create citizen after deletation with same id
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen", "1234", "James", "Brown", "New Street 5 Delft", "100", "200", "true", "1"]}'
+
 	cd fabric-network && docker-compose down
 
 test:
-	make test-blockchain
+	make unit-test-blockchain
 	cd cjib-app && npm test
 	cd municipalities-app && npm test
