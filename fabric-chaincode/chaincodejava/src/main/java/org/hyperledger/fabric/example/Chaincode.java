@@ -14,6 +14,7 @@ import com.ing.blockchain.zk.RangeProof;
 import com.ing.blockchain.zk.TTPGenerator;
 import com.ing.blockchain.zk.dto.BoudotRangeProof;
 import com.ing.blockchain.zk.dto.ClosedRange;
+import com.ing.blockchain.zk.dto.Commitment;
 import com.ing.blockchain.zk.dto.TTPMessage;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
@@ -70,8 +71,8 @@ public class Chaincode extends ChaincodeBase {
     /**
      * Creates a new citizen with given parameters and stores a on the ledger.
      * If a citizen with given BSN exists, doesn't create a new one.
-
-     args(8): {bsn, firstName, lastName, address, financialSupportStr, fineStr, consentStr, municipalityIdStr}
+     * <p>
+     * args(8): {bsn, firstName, lastName, address, financialSupportStr, fineStr, consentStr, municipalityIdStr}
      */
     private Response setCitizen(ChaincodeStub stub, List<String> args) {
         if (args.size() != 8) {
@@ -111,7 +112,7 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("Municipality Id was not provided");
         }
 
-        //Parse arguements
+        //Parse arguments
         Integer financialSupport = Integer.parseInt(financialSupportStr);
         Integer fine = Integer.parseInt(fineStr);
         Integer municipalityId = Integer.parseInt(municipalityIdStr);
@@ -124,15 +125,9 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
-        //Generate ZKRP to proove to CJIB that citizen can or can not pay
-        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport * 100));
-        ClosedRange closedRange = generateRange(fine, financialSupport);
-        BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
-
         //Create a citizen object
-        CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address,
-                financialSupport, fine, consent, municipalityId,
-                canPay(fine, financialSupport), ttpMessage.getCommitment(), rangeProof, closedRange);
+        CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address, financialSupport,
+                fine, consent, municipalityId);
 
         //Convert citizen object to byte array and save into state
         try {
@@ -152,13 +147,20 @@ public class Chaincode extends ChaincodeBase {
      * args(1) = {BSN}
      */
     private Response getCitizenMun(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 1) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+        if (args.size() > 2) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 1 or 2");
         }
 
         String bsn = args.get(0);
         if (bsn == null) {
             return newErrorResponse("Bsn was not provided");
+        }
+
+        int months;
+        if (args.size() != 2) {
+            months = 0;
+        } else {
+            months = Integer.parseInt(args.get(1));
         }
 
         //Check if citizen exists
@@ -182,7 +184,7 @@ public class Chaincode extends ChaincodeBase {
         //Normally financial information is not returned, here it is added to test.
         String response;
         try {
-            response = buildCitizenResponse(citizenInfo)
+            response = buildCitizenResponse(citizenInfo, months)
                     .put("financialSupport", citizenInfo.getFinancialSupport())
                     .toString();
         } catch (JsonProcessingException e) {
@@ -200,16 +202,21 @@ public class Chaincode extends ChaincodeBase {
      * args(1) = {BSN}
      */
     private Response getCitizenCJIB(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 1) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+        if (args.size() >= 1 && args.size() < 2) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 1 or 2");
         }
 
         String bsn = args.get(0);
-//        String fineAmount = args.get(1);
-//        String months = args.get(2);
-
         if (bsn == null) {
             return newErrorResponse("Bsn was not provided");
+        }
+
+        String monthsStr = args.get(1);
+        int months;
+        if (monthsStr == null) {
+            months = 0;
+        } else {
+            months = Integer.parseInt(monthsStr);
         }
 
         //Check if citizen exists
@@ -231,7 +238,7 @@ public class Chaincode extends ChaincodeBase {
         //Generate response with citizen info object to return to REST API
         String response;
         try {
-            response = buildCitizenResponse(citizenInfo).toString();
+            response = buildCitizenResponse(citizenInfo, months).toString();
         } catch (JsonProcessingException e) {
             return newErrorResponse(e);
         }
@@ -306,17 +313,6 @@ public class Chaincode extends ChaincodeBase {
         //Change the financial support value of citizen object with new value
         citizenInfo.setFinancialSupport(newFinancialSupport);
 
-        //Generate new ZKRP to proove to CJIB that citizen can or can not pay
-        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(newFinancialSupport * 100));
-        ClosedRange closedRange = generateRange(citizenInfo.getFine(), newFinancialSupport);
-        BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
-
-        //Change the object fields accordingly
-        citizenInfo.setCanPay(canPay(citizenInfo.getFine(), newFinancialSupport));
-        citizenInfo.setCommitment(ttpMessage.getCommitment());
-        citizenInfo.setClosedRange(closedRange);
-        citizenInfo.setBoudotRangeProof(rangeProof);
-
         _logger.info(String.format("new financialSupport of citizen: %s", newFinancialSupport));
 
         //Convert citizen object to byte array and save into state
@@ -358,18 +354,35 @@ public class Chaincode extends ChaincodeBase {
         return closedRange;
     }
 
+    private Proof generateProof(Integer financialSupport, Integer fine) {
+        //Generate ZKRP to proove to CJIB that citizen can or can not pay
+        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport * 100));
+        ClosedRange closedRange = generateRange(fine, financialSupport);
+        BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
+
+        return new Proof(ttpMessage.getCommitment(), closedRange, rangeProof);
+    }
+
+
     /**
      * Creates a JSONObject with citizenInfo object to return to REST API.
      */
-    private JSONObject buildCitizenResponse(CitizenInfo citizenInfo) throws JsonProcessingException {
+    private JSONObject buildCitizenResponse(CitizenInfo citizenInfo, int months) throws JsonProcessingException {
+
+        int citizenMoney = citizenInfo.getFinancialSupport();
+        if (months > 0) {
+            citizenMoney *= months;
+        }
+
+        Proof proof = generateProof(citizenMoney, citizenInfo.getFine());
 
         //Convert ZKRP variables into String variables to be able to call while verifying with JS code.
         ObjectMapper mapper = new ObjectMapper();
-        String serializedCommitment = mapper.writeValueAsString(citizenInfo.getCommitment());
+        String serializedCommitment = mapper.writeValueAsString(proof.getCommitment());
         _logger.info("Commitment: " + serializedCommitment);
-        String serializedProof = mapper.writeValueAsString(citizenInfo.getBoudotRangeProof());
+        String serializedProof = mapper.writeValueAsString(proof.getRangeProof());
         _logger.info("Proof: " + serializedProof);
-        String serializedRange = mapper.writeValueAsString(citizenInfo.getClosedRange());
+        String serializedRange = mapper.writeValueAsString(proof.getClosedRange());
         _logger.info("Range: " + serializedRange);
 
         return new JSONObject()
@@ -379,7 +392,7 @@ public class Chaincode extends ChaincodeBase {
                 .put("address", citizenInfo.getAddress())
                 .put("consent", citizenInfo.getConsent())
                 .put("municipalityId", citizenInfo.getMunicipalityId())
-                .put("canPay", citizenInfo.getCanPay())
+                .put("canPay", canPay(citizenInfo.getFine(), citizenInfo.getFinancialSupport()))
                 .put("commitment", new JSONObject(serializedCommitment))
                 .put("proof", new JSONObject(serializedProof))
                 .put("range", new JSONObject(serializedRange));

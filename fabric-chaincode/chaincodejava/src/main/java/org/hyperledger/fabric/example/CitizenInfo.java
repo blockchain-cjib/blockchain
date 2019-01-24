@@ -27,8 +27,7 @@ public class CitizenInfo implements Serializable {
     public CitizenInfo(String bsn, String firstName,
                        String lastName, String address,
                        Integer financialSupport, Integer fine, Boolean consent,
-                       Integer municipalityId, Boolean canPay, Commitment commitment,
-                       BoudotRangeProof boudotRangeProof, ClosedRange closedRange) {
+                       Integer municipalityId) {
         this.bsn = bsn;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -37,10 +36,6 @@ public class CitizenInfo implements Serializable {
         this.fine = fine;
         this.consent = consent;
         this.municipalityId = municipalityId;
-        this.canPay = canPay;
-        this.commitment = commitment;
-        this.boudotRangeProof = boudotRangeProof;
-        this.closedRange = closedRange;
     }
 
     public String getBsn() {
@@ -105,38 +100,6 @@ public class CitizenInfo implements Serializable {
 
     public void setMunicipalityId(Integer municipalityId) {
         this.municipalityId = municipalityId;
-    }
-
-    public Boolean getCanPay() {
-        return canPay;
-    }
-
-    public void setCanPay(Boolean canPay) {
-        this.canPay = canPay;
-    }
-
-    public Commitment getCommitment() {
-        return commitment;
-    }
-
-    public void setCommitment(Commitment commitment) {
-        this.commitment = commitment;
-    }
-
-    public BoudotRangeProof getBoudotRangeProof() {
-        return boudotRangeProof;
-    }
-
-    public void setBoudotRangeProof(BoudotRangeProof boudotRangeProof) {
-        this.boudotRangeProof = boudotRangeProof;
-    }
-
-    public ClosedRange getClosedRange() {
-        return closedRange;
-    }
-
-    public void setClosedRange(ClosedRange closedRange) {
-        this.closedRange = closedRange;
     }
 
     @Override
