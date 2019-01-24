@@ -216,14 +216,12 @@ router.use(function (req, res, next) {
                         res.status(403).json({success: false, msg: 'Authentication failed. User not found.'});
                     } else {
                         let requestBsn = req.query.bsn;
-                        // let requestFineAmount = req.query.fineAmount;
-                        // let requestMonths = req.query.months;
+                        let requestMonths = req.query.months;
     
-                        // let params = [requestBsn, requestFineAmount];
                         let params = [requestBsn];
-                        // if (requestMonths) {
-                        //     params.push(requestMonths);
-                        // }
+                        if (requestMonths) {
+                            params.push(requestMonths);
+                        }
 
                         // query the chaincode
                         query({
