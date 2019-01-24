@@ -59,6 +59,7 @@ fabric-init-crypto:
 fabric-start-network:
 	cd $(FABRIC_ROOT_DIR) && \
 	docker rm $(shell docker ps -a -q) | true && \
+	docker rmi $(docker images | grep dev-peer | awk "{print \$3}") | true && \
 	docker-compose up
 
 
@@ -172,4 +173,48 @@ start-municipalities-app:
 	npm install && \
 	npm start
 
+test-blockchain:
+	cd fabric-network && docker-compose down
 
+	make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network
+	cd fabric-network && docker rm $(shell docker ps -a -q) | true && docker-compose up -d
+
+	# Wait until network has started
+	sleep 30
+
+	# Test create citizen
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["setCitizen", "1234", "James", "Brown", "New Street 5 Delft", "100", "200", "true", "1"]}'
+
+	# Wait untill citizen is created
+	sleep 5
+
+	# Test get citizen no month
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["getCitizenMun", "1234"]}'
+
+	# Test get citizen 1 month
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["getCitizenMun", "1234", "1"]}'
+
+	# Test get citizen 20 month
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["getCitizenMun", "1234", "20"]}'
+
+	# Test get citizen no month
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["getCitizenCJIB", "1234"]}'
+
+	# Test get citizen 1 month
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["getCitizenCJIB", "1234", "1"]}'
+
+	# Test get citizen 20 month
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["getCitizenCJIB", "1234", "20"]}'
+
+	# Test update citizen
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["updateCitizen", "1234", "2000"]}'
+
+	# Test delete citizen
+	make fabric-chaincode-invoke CC_ARGS='{"Args":["deleteCitizen", "1234"]}'
+
+	cd fabric-network && docker-compose down
+
+test:
+	make test-blockchain
+	cd cjib-app && npm test
+	cd municipalities-app && npm test
