@@ -202,7 +202,7 @@ public class Chaincode extends ChaincodeBase {
      * args(1) = {BSN}
      */
     private Response getCitizenCJIB(ChaincodeStub stub, List<String> args) {
-        if (args.size() >= 1 && args.size() < 2) {
+        if (args.size() > 2) {
             return newErrorResponse("Incorrect number of arguments. Expecting 1 or 2");
         }
 
@@ -211,12 +211,11 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("Bsn was not provided");
         }
 
-        String monthsStr = args.get(1);
         int months;
-        if (monthsStr == null) {
+        if (args.size() != 2) {
             months = 0;
         } else {
-            months = Integer.parseInt(monthsStr);
+            months = Integer.parseInt(args.get(1));
         }
 
         //Check if citizen exists
