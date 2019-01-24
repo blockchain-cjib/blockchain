@@ -28,28 +28,35 @@ public class Chaincode extends ChaincodeBase {
 
     private static Log _logger = LogFactory.getLog(Chaincode.class);
 
+    /**
+     * Init is called during chaincode instantiation to initialize any data.
+     */
     @Override
     public Response init(ChaincodeStub stub) {
         _logger.info("Init java simple chaincode");
         return newSuccessResponse();
     }
 
+    /**
+     * Invoke is called per transaction on the chaincode.
+     */
     @Override
     public Response invoke(ChaincodeStub stub) {
         try {
             _logger.info("Invoke java simple chaincode");
             String func = stub.getFunction();
             List<String> params = stub.getParameters();
+            // Handle different functions
             switch (func) {
-                case "setCitizen":
+                case "setCitizen": //create a new citizen
                     return setCitizen(stub, params);
-                case "getCitizenMun":
+                case "getCitizenMun": //get citizen based on bsn, from municipality side
                     return getCitizenMun(stub, params);
-                case "getCitizenCJIB":
+                case "getCitizenCJIB": //get citizen based on bsn, from CJIB side
                     return getCitizenCJIB(stub, params);
-                case "updateCitizen":
+                case "updateCitizen": //update citizen information with given bsn
                     return updateCitizen(stub, params);
-                case "deleteCitizen":
+                case "deleteCitizen": //delete citizen with given bsn
                     return deleteCitizen(stub, params);
                 default:
                     return newErrorResponse("Invalid invoke function name. Expecting one of: [\"setCitizen\", " +
@@ -60,6 +67,12 @@ public class Chaincode extends ChaincodeBase {
         }
     }
 
+    /**
+     * Creates a new citizen with given parameters and stores a on the ledger.
+     * If a citizen with given BSN exists, doesn't create a new one.
+
+     args(8): {bsn, firstName, lastName, address, financialSupportStr, fineStr, consentStr, municipalityIdStr}
+     */
     private Response setCitizen(ChaincodeStub stub, List<String> args) {
         if (args.size() != 8) {
             return newErrorResponse("Incorrect number of arguments. Expecting 8");
@@ -98,6 +111,7 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("Municipality Id was not provided");
         }
 
+        //Parse arguements
         Integer financialSupport = Integer.parseInt(financialSupportStr);
         Integer fine = Integer.parseInt(fineStr);
         Integer municipalityId = Integer.parseInt(municipalityIdStr);
@@ -105,18 +119,22 @@ public class Chaincode extends ChaincodeBase {
 
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
 
+        //Check if citizen already exists
         if (!citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
+        //Generate ZKRP to proove to CJIB that citizen can or can not pay
         TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport * 100));
         ClosedRange closedRange = generateRange(fine, financialSupport);
         BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
 
+        //Create a citizen object
         CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address,
                 financialSupport, fine, consent, municipalityId,
                 canPay(fine, financialSupport), ttpMessage.getCommitment(), rangeProof, closedRange);
 
+        //Convert citizen object to byte array and save into state
         try {
             byte[] cit = objectToByteArray(citizenInfo);
             stub.putPrivateData("citizenCollection", bsn, cit);
@@ -124,9 +142,15 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("Conversion Error " + e);
         }
 
+        //Return success
         return newSuccessResponse("citizen added successfully");
     }
 
+    /**
+     * Reads citizen information with given BSN from the ledger.
+     * Difference from getCitizenCJIB: this adds financialSupport to response.
+     * args(1) = {BSN}
+     */
     private Response getCitizenMun(ChaincodeStub stub, List<String> args) {
         if (args.size() != 1) {
             return newErrorResponse("Incorrect number of arguments. Expecting 1");
@@ -137,19 +161,25 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("Bsn was not provided");
         }
 
+        //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
         if (citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
+        //Search ledger with given BSN, save returned citizen info as byte array
         CitizenInfo citizenInfo;
         byte[] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+
+        //Convert byte array citizen info into object
         try {
             citizenInfo = byteArrayToObject(citizenInfoByte);
         } catch (IOException | ClassNotFoundException e) {
             return newErrorResponse("Conversion Error " + e);
         }
 
+        //Generate response with citizen info object to return to REST API.
+        //Normally financial information is not returned, here it is added to test.
         String response;
         try {
             response = buildCitizenResponse(citizenInfo)
@@ -160,9 +190,15 @@ public class Chaincode extends ChaincodeBase {
         }
         _logger.info(response);
 
+        //Return success and requested citizen information as response
         return newSuccessResponse("success", ByteString.copyFrom(response, UTF_8).toByteArray());
     }
 
+    /**
+     * Reads citizen information with given BSN from the ledger.
+     * Financial support information is not added to response.
+     * args(1) = {BSN}
+     */
     private Response getCitizenCJIB(ChaincodeStub stub, List<String> args) {
         if (args.size() != 1) {
             return newErrorResponse("Incorrect number of arguments. Expecting 1");
@@ -176,19 +212,23 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("Bsn was not provided");
         }
 
+        //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
         if (citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
+        //Search ledger with given BSN, save returned citizen info as byte array
         CitizenInfo citizenInfo;
         byte[] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+        //Convert byte array citizen info into object
         try {
             citizenInfo = byteArrayToObject(citizenInfoByte);
         } catch (IOException | ClassNotFoundException e) {
             return newErrorResponse("Conversion Error " + e);
         }
 
+        //Generate response with citizen info object to return to REST API
         String response;
         try {
             response = buildCitizenResponse(citizenInfo).toString();
@@ -197,9 +237,14 @@ public class Chaincode extends ChaincodeBase {
         }
         _logger.info(response);
 
+        //Return success and requested citizen information as response
         return newSuccessResponse("success", ByteString.copyFrom(response, UTF_8).toByteArray());
     }
 
+    /**
+     * Removes citizen information with given BSN from ledger.
+     * args(1) = {BSN}
+     */
     private Response deleteCitizen(ChaincodeStub stub, List<String> args) {
         if (args.size() != 1) {
             return newErrorResponse("Incorrect number of arguments. Expecting 1");
@@ -210,18 +255,24 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
+        //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
         if (citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
-        //stub.delState(bsn);
+        //Delete citizen with given BSN
         stub.delPrivateData("citizenCollection", bsn);
 
         _logger.info(String.format("citizen deleted with bsn number: %s", bsn));
+        //Return success
         return newSuccessResponse();
     }
 
+    /**
+     * Removes citizen information with given BSN from ledger.
+     * args(2) = {BSN, new financial support}
+     */
     private Response updateCitizen(ChaincodeStub stub, List<String> args) {
         if (args.size() != 2) {
             return newErrorResponse("Incorrect number of arguments. Expecting 2");
@@ -232,14 +283,16 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
+        //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
-
         if (citizenInfoStr.equals("")) {
             return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
         }
 
+        //Search ledger with given BSN, save returned citizen info as byte array
         CitizenInfo citizenInfo;
         byte[] citizenInfoByte = stub.getPrivateData("citizenCollection", bsn);
+        //Convert byte array citizen info into object
         try {
             citizenInfo = byteArrayToObject(citizenInfoByte);
         } catch (IOException e) {
@@ -248,14 +301,17 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse("Class not found");
         }
 
+        //Parse the argument
         Integer newFinancialSupport = Integer.parseInt(args.get(1));
-        //here change the financial support value of citizen object
+        //Change the financial support value of citizen object with new value
         citizenInfo.setFinancialSupport(newFinancialSupport);
 
+        //Generate new ZKRP to proove to CJIB that citizen can or can not pay
         TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(newFinancialSupport * 100));
         ClosedRange closedRange = generateRange(citizenInfo.getFine(), newFinancialSupport);
         BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
 
+        //Change the object fields accordingly
         citizenInfo.setCanPay(canPay(citizenInfo.getFine(), newFinancialSupport));
         citizenInfo.setCommitment(ttpMessage.getCommitment());
         citizenInfo.setClosedRange(closedRange);
@@ -263,6 +319,7 @@ public class Chaincode extends ChaincodeBase {
 
         _logger.info(String.format("new financialSupport of citizen: %s", newFinancialSupport));
 
+        //Convert citizen object to byte array and save into state
         try {
             byte[] cit = objectToByteArray(citizenInfo);
             stub.putPrivateData("citizenCollection", bsn, cit);
@@ -272,13 +329,21 @@ public class Chaincode extends ChaincodeBase {
 
         _logger.info("Update complete");
 
+        //Return success
         return newSuccessResponse("update finished successfully", ByteString.copyFrom(bsn + ": " + newFinancialSupport, UTF_8).toByteArray());
     }
 
+    /**
+     * Checks whether citizen can pay his fine or not.
+     * If fine is less than financialSupport, citizen is able to pay.
+     */
     private static Boolean canPay(Integer fine, Integer financialSupport) {
         return fine <= financialSupport;
     }
 
+    /**
+     * Creates a closed interval of integers.
+     */
     private static ClosedRange generateRange(Integer fine, Integer financialSupport) {
         ClosedRange closedRange;
         fine *= 100;
@@ -293,7 +358,12 @@ public class Chaincode extends ChaincodeBase {
         return closedRange;
     }
 
+    /**
+     * Creates a JSONObject with citizenInfo object to return to REST API.
+     */
     private JSONObject buildCitizenResponse(CitizenInfo citizenInfo) throws JsonProcessingException {
+
+        //Convert ZKRP variables into String variables to be able to call while verifying with JS code.
         ObjectMapper mapper = new ObjectMapper();
         String serializedCommitment = mapper.writeValueAsString(citizenInfo.getCommitment());
         _logger.info("Commitment: " + serializedCommitment);
@@ -315,6 +385,9 @@ public class Chaincode extends ChaincodeBase {
                 .put("range", new JSONObject(serializedRange));
     }
 
+    /**
+     * Converts citizenInfo object into byte array.
+     */
     private byte[] objectToByteArray(CitizenInfo citizenInfo) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -323,6 +396,9 @@ public class Chaincode extends ChaincodeBase {
         return bos.toByteArray();
     }
 
+    /**
+     * Converts byte array data into citizenInfo object.
+     */
     private static CitizenInfo byteArrayToObject(byte[] data) throws IOException, ClassNotFoundException {
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         ObjectInputStream is = new ObjectInputStream(in);
