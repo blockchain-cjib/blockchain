@@ -33,7 +33,7 @@ export class ApiService {
 
   verifyProof(proof): Observable<any> {
     return this.http.post(this.apiUrl + 'verifyProof', proof, httpOptions).pipe(
-      map(this.extractData),
+      map(res => res),
       catchError(this.handleError))
   }
 

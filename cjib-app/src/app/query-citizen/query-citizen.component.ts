@@ -91,6 +91,7 @@ export class QueryCitizenComponent implements OnInit {
     }
 
     verifyProof = function(proof) {
+
         this.apiService.verifyProof(proof)
 		.subscribe(
 			res => this.verifyProofSuccessCallback(res),
@@ -98,6 +99,7 @@ export class QueryCitizenComponent implements OnInit {
     }
 
     verifyProofSuccessCallback(result) {
+        console.log(result);
         this.loading = false;
         this.queryAnswer = result.answer;
 	}
