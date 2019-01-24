@@ -404,7 +404,7 @@ router.use(function (req, res, next) {
 
         const answer = java.callStaticMethodSync('com.ing.blockchain.zk.JavaScriptRangeProof', 'verify', proof, commitment, range);
 
-        return res.status(200).send({'answer': answer})
+        return res.status(200).send({answer: answer})
     });
 
 getToken = function (headers) {
