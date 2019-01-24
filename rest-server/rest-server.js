@@ -3,8 +3,11 @@ const app = express();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const config = require('./config/environment');
-const jwt  = require('jwt-simple');
+const jwt = require('jwt-simple');
 const passport = require('passport');
+const java = require('java');
+java.classpath.push('zkrp.jar');
+
 const port = 8080;
 
 const CJIB_ROLE = 0;
@@ -22,7 +25,7 @@ app.use(bodyParser.json());
 // log to console
 app.use(morgan('dev'));
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, Content-Type, Accept");
     next();
@@ -33,7 +36,7 @@ const path = require('path');
 const util = require('util');
 const db = require('./config/db-config');
 const User = db.user;
- 
+
 const fabric_client = new Fabric_Client();
 const channel = fabric_client.newChannel('mychannel');
 const peer = fabric_client.newPeer('grpc://localhost:7051');
@@ -253,7 +256,7 @@ router.use(function (req, res, next) {
     })
 
     // [POST] authenticate user
-    .post('/authenticate', function(req, res) {
+    .post('/authenticate', function (req, res) {
         var username = req.body.name;
         var password = req.body.password;
 
@@ -274,9 +277,9 @@ router.use(function (req, res, next) {
                     }
                 });
             }
-		}).catch(err => {
-			res.status(500).json({msg: "error", details: err});
-		});
+        }).catch(err => {
+            res.status(500).json({msg: "error", details: err});
+        });
     })
 
     // [POST] create citizen info
@@ -393,6 +396,15 @@ router.use(function (req, res, next) {
             // Authorization token was not provided
             return res.status(403).send({success: false, msg: 'No token provided.'});
         }
+    })
+    .post('/verifyProof', function (req, res, next) {
+        const commitment = JSON.stringify({'commitment': req.body.commitment});
+        const range = JSON.stringify({'range': req.body.range});
+        const proof = JSON.stringify({'proof': req.body.proof});
+
+        const answer = java.callStaticMethodSync('com.ing.blockchain.zk.JavaScriptRangeProof', 'verify', proof, commitment, range);
+
+        return res.status(200).send({'answer': answer})
     });
 
 getToken = function (headers) {
