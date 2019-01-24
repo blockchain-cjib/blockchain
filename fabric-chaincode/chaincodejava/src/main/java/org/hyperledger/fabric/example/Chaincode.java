@@ -109,23 +109,13 @@ public class Chaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Citizen with BSN %s already exists'", bsn));
         }
 
-
-        ClosedRange closedRange;
-        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
-        Boolean canPay = fine <= financialSupport;
-        if (!canPay) {
-            fine -= 1;
-            closedRange = ClosedRange.of("0", fine.toString());
-            fine += 1;
-        } else {
-            // TODO
-            closedRange = ClosedRange.of("0", financialSupport.toString());
-        }
-
+        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport * 100));
+        ClosedRange closedRange = generateRange(fine, financialSupport);
         BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
+
         CitizenInfo citizenInfo = new CitizenInfo(bsn, firstName, lastName, address,
                 financialSupport, fine, consent, municipalityId,
-                canPay, ttpMessage.getCommitment(), rangeProof, closedRange);
+                canPay(fine, financialSupport), ttpMessage.getCommitment(), rangeProof, closedRange);
 
         try {
             byte[] cit = objectToByteArray(citizenInfo);
@@ -262,6 +252,15 @@ public class Chaincode extends ChaincodeBase {
         //here change the financial support value of citizen object
         citizenInfo.setFinancialSupport(newFinancialSupport);
 
+        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(newFinancialSupport * 100));
+        ClosedRange closedRange = generateRange(citizenInfo.getFine(), newFinancialSupport);
+        BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
+
+        citizenInfo.setCanPay(canPay(citizenInfo.getFine(), newFinancialSupport));
+        citizenInfo.setCommitment(ttpMessage.getCommitment());
+        citizenInfo.setClosedRange(closedRange);
+        citizenInfo.setBoudotRangeProof(rangeProof);
+
         _logger.info(String.format("new financialSupport of citizen: %s", newFinancialSupport));
 
         try {
@@ -274,6 +273,24 @@ public class Chaincode extends ChaincodeBase {
         _logger.info("Update complete");
 
         return newSuccessResponse("update finished successfully", ByteString.copyFrom(bsn + ": " + newFinancialSupport, UTF_8).toByteArray());
+    }
+
+    private static Boolean canPay(Integer fine, Integer financialSupport) {
+        return fine <= financialSupport;
+    }
+
+    private static ClosedRange generateRange(Integer fine, Integer financialSupport) {
+        ClosedRange closedRange;
+        fine *= 100;
+        financialSupport *= 100;
+        if (!canPay(fine, financialSupport)) {
+            fine -= 1;
+            closedRange = ClosedRange.of("0", fine.toString());
+        } else {
+            closedRange = ClosedRange.of(fine.toString(), "999999999999999999999999999999999999999999999999999999999999999");
+        }
+
+        return closedRange;
     }
 
     private JSONObject buildCitizenResponse(CitizenInfo citizenInfo) throws JsonProcessingException {
