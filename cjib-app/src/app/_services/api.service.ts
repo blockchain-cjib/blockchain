@@ -28,14 +28,20 @@ export class ApiService {
 
     return this.http.get(this.apiUrl + 'getCitizen', httpOptions).pipe(
         map(res => res),
-        catchError(this.handleError<any>()))
+        catchError(this.handleError))
   }
 
-  private handleError<T> (result?: T) {
-    return (error: any): Observable<T> => {
-      console.error(error);
-      return throwError(error);
-    };
+  verifyProof(proof): Observable<any> {
+    return this.http.post(this.apiUrl + 'verifyProof', proof, httpOptions).pipe(
+      map(this.extractData),
+      catchError(this.handleError))
+  }
+
+  private handleError(error: any): Observable<string> {
+    console.log(error);
+    const errMsg = 'Server error';
+    console.error(errMsg); 
+    return throwError(error);
   }
 
   private extractData(res: Response): any {

@@ -78,9 +78,8 @@ export class QueryCitizenComponent implements OnInit {
 	}
 
 	queryCitizenAbilityToPaySuccessCallback(result) {
-        this.loading = false;
-        this.queryAnswer = result.answer;
-	}
+        this.verifyProof(result);
+    }
 
 	queryCitizenAbilityToPayFailCallback(error) {
         if (error.status == 404) {
@@ -90,4 +89,21 @@ export class QueryCitizenComponent implements OnInit {
         }
 		this.loading = false;
     }
+
+    verifyProof = function(proof) {
+        this.apiService.verifyProof(proof)
+		.subscribe(
+			res => this.verifyProofSuccessCallback(res),
+			err => this.verifyProofFailCallback(err));
+    }
+
+    verifyProofSuccessCallback(result) {
+        this.loading = false;
+        this.queryAnswer = result.answer;
+	}
+
+    verifyProofFailCallback(error) {
+        this.errorAlert = true;
+		this.loading = false;
+	}
 }
