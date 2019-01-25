@@ -20,9 +20,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyByte;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ChaincodeTest {
     @Mock
@@ -118,5 +116,7 @@ public class ChaincodeTest {
         Response r = cc.invoke(ccs);
         assertEquals(r.getMessage(), "citizen added successfully");
         assertEquals(r.getStatus(), Status.SUCCESS);
+        Mockito.verify(ccs, times(1)).getParameters();
+        Mockito.verify(ccs, times(1)).getPrivateDataUTF8(anyString(), anyString());
     }
 }
