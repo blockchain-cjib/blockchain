@@ -340,8 +340,6 @@ public class Chaincode extends ChaincodeBase {
      */
     private static ClosedRange generateRange(Integer fine, Integer financialSupport) {
         ClosedRange closedRange;
-        fine *= 100;
-        financialSupport *= 100;
         if (!canPay(fine, financialSupport)) {
             fine -= 1;
             closedRange = ClosedRange.of("0", fine.toString());
@@ -354,7 +352,7 @@ public class Chaincode extends ChaincodeBase {
 
     private Proof generateProof(Integer financialSupport, Integer fine) {
         //Generate ZKRP to proove to CJIB that citizen can or can not pay
-        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport * 100));
+        TTPMessage ttpMessage = TTPGenerator.generateTTPMessage(BigInteger.valueOf(financialSupport));
         ClosedRange closedRange = generateRange(fine, financialSupport);
         BoudotRangeProof rangeProof = RangeProof.calculateRangeProof(ttpMessage, closedRange);
 
