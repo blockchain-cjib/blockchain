@@ -344,7 +344,7 @@ public class Chaincode extends ChaincodeBase {
             fine -= 1;
             closedRange = ClosedRange.of("0", fine.toString());
         } else {
-            closedRange = ClosedRange.of(fine.toString(), "999999999999999999999999999999999999999999999999999999999999999");
+            closedRange = ClosedRange.of(fine.toString(), "10000000000000000000000000000000000000");
         }
 
         return closedRange;
