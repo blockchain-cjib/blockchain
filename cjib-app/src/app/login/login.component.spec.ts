@@ -2,6 +2,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AppRoutingModule } from '../app-routing.module';
+import { AuthService } from '../_services/auth.service';
+import { HttpClientModule }    from '@angular/common/http';
 
 import { LoginComponent } from './login.component';
 import { QueryCitizenComponent } from '../query-citizen/query-citizen.component';
@@ -15,11 +17,15 @@ describe('LoginComponent', () => {
       imports: [
          AppRoutingModule,
          FormsModule,
-         ReactiveFormsModule
+         ReactiveFormsModule,
+         HttpClientModule
       ],
       declarations: [ 
         LoginComponent,
         QueryCitizenComponent
+      ],
+      providers: [
+        AuthService
       ]
     })
     .compileComponents();
