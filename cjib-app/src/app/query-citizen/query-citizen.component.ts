@@ -86,6 +86,9 @@ export class QueryCitizenComponent implements OnInit {
     }
 
 	queryCitizenAbilityToPayFailCallback(error) {
+        console.log('------------------');
+        console.log(error);
+
         if (error.status == 404) {
             this.queryAnswer = null;
         } else {
