@@ -87,28 +87,28 @@ public class Chaincode extends ChaincodeBase {
         String consentStr = args.get(6);
         String municipalityIdStr = args.get(7);
 
-        if (bsn == null) {
-            return newErrorResponse("Bsn was not provided");
+        if (bsn.length() <= 0) {
+            return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
-        if (firstName == null) {
+        if (firstName.length() <= 0) {
             return newErrorResponse("First Name was not provided");
         }
-        if (lastName == null) {
+        if (lastName.length() <= 0) {
             return newErrorResponse("Last Name was not provided");
         }
-        if (address == null) {
+        if (address.length() <= 0) {
             return newErrorResponse("Address was not provided");
         }
-        if (financialSupportStr == null) {
+        if (financialSupportStr.length() <= 0) {
             return newErrorResponse("Financial Support was not provided");
         }
-        if (fineStr == null) {
+        if (fineStr.length() <= 0) {
             return newErrorResponse("Fine amount was not provided");
         }
-        if (consentStr == null) {
+        if (consentStr.length() <= 0) {
             return newErrorResponse("Consent was not provided");
         }
-        if (municipalityIdStr == null) {
+        if (municipalityIdStr.length() <= 0) {
             return newErrorResponse("Municipality Id was not provided");
         }
 
@@ -152,8 +152,8 @@ public class Chaincode extends ChaincodeBase {
         }
 
         String bsn = args.get(0);
-        if (bsn == null) {
-            return newErrorResponse("Bsn was not provided");
+        if (bsn.length() <= 0) {
+            return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
         int months;
@@ -166,7 +166,7 @@ public class Chaincode extends ChaincodeBase {
         //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
         if (citizenInfoStr.equals("")) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+            return newErrorResponse(String.format("Error 404: Citizen with BSN %s does not exist'", bsn));
         }
 
         //Search ledger with given BSN, save returned citizen info as byte array
@@ -207,8 +207,8 @@ public class Chaincode extends ChaincodeBase {
         }
 
         String bsn = args.get(0);
-        if (bsn == null) {
-            return newErrorResponse("Bsn was not provided");
+        if (bsn.length() <= 0) {
+            return newErrorResponse("1st argument (BSN) must be a non-empty string");
         }
 
         int months;
@@ -221,7 +221,7 @@ public class Chaincode extends ChaincodeBase {
         //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
         if (citizenInfoStr.equals("")) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+            return newErrorResponse(String.format("Error 404: Citizen with BSN %s does not exist'", bsn));
         }
 
         //Search ledger with given BSN, save returned citizen info as byte array
@@ -264,7 +264,7 @@ public class Chaincode extends ChaincodeBase {
         //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
         if (citizenInfoStr.equals("")) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+            return newErrorResponse(String.format("Error 404: Citizen with BSN %s does not exist'", bsn));
         }
 
         //Delete citizen with given BSN
@@ -292,7 +292,7 @@ public class Chaincode extends ChaincodeBase {
         //Check if citizen exists
         String citizenInfoStr = stub.getPrivateDataUTF8("citizenCollection", bsn);
         if (citizenInfoStr.equals("")) {
-            return newErrorResponse(String.format("Citizen with BSN %s does not exist'", bsn));
+            return newErrorResponse(String.format("Error 404: Citizen with BSN %s does not exist'", bsn));
         }
 
         //Search ledger with given BSN, save returned citizen info as byte array

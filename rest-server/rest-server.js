@@ -230,18 +230,6 @@ router.use(function (req, res, next) {
                             args: params
                         }).then(fetchedCitizen => {
                             let citizenInfo = JSON.parse(fetchedCitizen.toString());
-                            // TODO FIX IN APP UI
-                            // let response = {
-                            //     answer: false
-                            // };
-                            // let financialSupport = citizenInfo.financialSupport;
-                            //
-                            // if (requestMonths) {
-                            //     response.answer = (financialSupport * requestMonths >= requestFineAmount);
-                            // } else {
-                            //     response.answer = (financialSupport >= requestFineAmount);
-                            // }
-
                             res.json(citizenInfo);
                         }).catch(next);
                     }
@@ -421,7 +409,7 @@ getToken = function (headers) {
 app.use('/api', router);
 
 function getError(message) {
-    if (message.startsWith('transaction returned with failure: Error: 404: ')) {
+    if (message.startsWith('transaction returned with failure: Error 404:')) {
         return 404
     } else {
         return 500
