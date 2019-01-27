@@ -46,9 +46,14 @@
                 </button>
         
                 <div id="answer" class="form-group">
-                    <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
-                    <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
-                    <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
+                    <div *ngIf="isProofVerified === true">
+                        <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
+                        <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
+                        <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
+                    </div>
+                    <div *ngIf="isProofVerified === false">
+                        Proof Verification failed. Please retry submitting the query.
+                    </div>
                 </div>
             </form>
             <form *ngIf="selectedType.id===2" [formGroup]="queryCitizenForm2" (ngSubmit)="onSubmit(f2.bsn.value, f2.months.value)">
@@ -81,9 +86,14 @@
                 </button>
         
                 <div id="answer" class="form-group">
-                    <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
-                    <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
-                    <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
+                    <div *ngIf="isProofVerified === true">
+                        <div [hidden]="!(queryAnswer === true)">The citizen is able to pay.</div>
+                        <div [hidden]="!(queryAnswer === false)">The citizen is not able to pay.</div>
+                        <div [hidden]="!(queryAnswer === null)">There are no information about this citizen in the blockchain.</div>
+                    </div>
+                    <div *ngIf="isProofVerified === false">
+                        Proof Verification failed. Please retry submitting the query.
+                    </div>
                 </div>
             </form>
         </div>

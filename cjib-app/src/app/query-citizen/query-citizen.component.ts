@@ -19,6 +19,7 @@ export class QueryCitizenComponent implements OnInit {
     submitted = false;
     errorAlert = false;
     queryAnswer = undefined;
+    isProofVerified = null;
 
   	constructor(private apiService: ApiService, private formBuilder: FormBuilder) { 
     	this.queryTypes = [
@@ -62,6 +63,7 @@ export class QueryCitizenComponent implements OnInit {
         this.submitted = false;
         this.errorAlert = false;
         this.queryAnswer = undefined;
+        this.isProofVerified = null;
 
         this.queryCitizenForm.reset();
         this.queryCitizenForm2.reset();
@@ -70,6 +72,7 @@ export class QueryCitizenComponent implements OnInit {
 	queryCitizenAbilityToPay = function(bsn, months) {
         this.closeAlert();
         this.loading = true;
+        this.isProofVerified = null;
         
 		this.apiService.queryCitizenAbilityToPay(bsn, months)
 		.subscribe(
@@ -78,6 +81,7 @@ export class QueryCitizenComponent implements OnInit {
 	}
 
 	queryCitizenAbilityToPaySuccessCallback(result) {
+        this.queryAnswer = result.canPay;
         this.verifyProof(result);
     }
 
@@ -87,6 +91,7 @@ export class QueryCitizenComponent implements OnInit {
         } else {
             this.errorAlert = true;
         }
+        this.isProofVerified = null;
 		this.loading = false;
     }
 
@@ -99,13 +104,13 @@ export class QueryCitizenComponent implements OnInit {
     }
 
     verifyProofSuccessCallback(result) {
-        console.log(result);
         this.loading = false;
-        this.queryAnswer = result.answer;
+        this.isProofVerified = result.answer;
 	}
 
     verifyProofFailCallback(error) {
         this.errorAlert = true;
 		this.loading = false;
+        this.isProofVerified = null;
 	}
 }
