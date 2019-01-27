@@ -391,7 +391,7 @@ public class Chaincode extends ChaincodeBase {
                 .put("address", citizenInfo.getAddress())
                 .put("consent", citizenInfo.getConsent())
                 .put("municipalityId", citizenInfo.getMunicipalityId())
-                .put("canPay", canPay(citizenInfo.getFine(), citizenInfo.getFinancialSupport()))
+                .put("canPay", canPay(citizenInfo.getFine(), citizenMoney))
                 .put("commitment", new JSONObject(serializedCommitment))
                 .put("proof", new JSONObject(serializedProof))
                 .put("range", new JSONObject(serializedRange));
