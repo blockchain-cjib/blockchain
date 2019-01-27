@@ -57,6 +57,7 @@ fabric-init-crypto:
 
 # Start the whole blockchain network
 fabric-start-network:
+	docker pull hyperledger/fabric-javaenv:amd64-1.4.0
 	cd $(FABRIC_ROOT_DIR) && \
 	docker rm $(shell docker ps -a -q) | true && \
 	docker rmi $(docker images | grep dev-peer | awk "{print \$3}") | true && \
