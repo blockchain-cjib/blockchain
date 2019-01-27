@@ -1,6 +1,7 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.3'
     id 'java'
+    id "com.adarshr.test-logger" version "1.6.0"
 }
 
 group 'org.hyperledger.fabric-chaincode-java'
@@ -20,9 +21,11 @@ dependencies {
     testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
     testCompile('org.junit.jupiter:junit-jupiter-params:5.3.2')
     testRuntime('org.junit.jupiter:junit-jupiter-engine:5.3.2')
-    def mockito_version = 'latest.release'
-    // For local unit tests on your development machine
-    testCompile "org.mockito:mockito-core:$mockito_version"
+    testCompile('org.mockito:mockito-core:2.2.21')
+}
+
+test {
+    useJUnitPlatform()
 }
 
 shadowJar {

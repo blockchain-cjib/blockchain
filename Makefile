@@ -173,7 +173,7 @@ start-municipalities-app:
 	npm install && \
 	npm start
 
-unit-test-blockchain:
+test-blockchain-commands:
 	cd fabric-network && docker-compose down
 
 	make fabric-init-crypto FABRIC_ROOT_DIR=fabric-network
@@ -218,6 +218,6 @@ unit-test-blockchain:
 	cd fabric-network && docker-compose down
 
 test:
-	make unit-test-blockchain
+	cd fabric-chaincode/chaincodejava && gradle clean test
 	cd cjib-app && npm test
 	cd municipalities-app && npm test

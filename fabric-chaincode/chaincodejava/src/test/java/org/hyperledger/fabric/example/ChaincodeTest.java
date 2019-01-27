@@ -1,6 +1,5 @@
 package org.hyperledger.fabric.example;
 
-
 import org.hyperledger.fabric.shim.ChaincodeStub;
 import org.hyperledger.fabric.shim.Chaincode.*;
 import org.hyperledger.fabric.shim.Chaincode.Response.*;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.AdditionalMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -17,11 +15,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyByte;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -64,7 +60,7 @@ public class ChaincodeTest {
         when(ccs.getFunction()).thenReturn("setCitizen");
         ArrayList<String> citizen = new ArrayList<String>() {
             {add("1"); add("FirstName"); add("LastName"); add("Adress"); add("100"); add("50"); add("True"); add("1");}};
-        citizen.set(i, null);
+        citizen.set(i, "");
         when(ccs.getParameters()).thenReturn(citizen);
         Response r = cc.invoke(ccs);
         assertEquals(r.getMessage(), errorMessage);
@@ -73,7 +69,7 @@ public class ChaincodeTest {
 
     static Stream<Arguments> generateErrors(){
         return Stream.of(
-                Arguments.of(0,"Bsn was not provided"),
+                Arguments.of(0,"1st argument (BSN) must be a non-empty string"),
                 Arguments.of(1,"First Name was not provided"),
                 Arguments.of(2,"Last Name was not provided"),
                 Arguments.of(3,"Address was not provided"),
@@ -133,11 +129,11 @@ public class ChaincodeTest {
     public void getCitizenTest_BSNnull(String func){
         when(ccs.getFunction()).thenReturn(func);
         ArrayList<String> args = new ArrayList<String>(){
-            {add(null); add("1");}
+            {add(""); add("1");}
         };
         when(ccs.getParameters()).thenReturn(args);
         Response r = cc.invoke(ccs);
-        assertEquals(r.getMessage(), "Bsn was not provided");
+        assertEquals(r.getMessage(), "1st argument (BSN) must be a non-empty string");
         assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
     }
 
@@ -151,7 +147,7 @@ public class ChaincodeTest {
         when(ccs.getParameters()).thenReturn(args);
         when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("");
         Response r = cc.invoke(ccs);
-        assertEquals(r.getMessage(), "Citizen with BSN 1 does not exist'");
+        assertEquals(r.getMessage(), "Error 404: Citizen with BSN 1 does not exist'");
         assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
     }
 
@@ -240,7 +236,7 @@ public class ChaincodeTest {
         when(ccs.getParameters()).thenReturn(args);
         when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("");
         Response r = cc.invoke(ccs);
-        assertEquals(r.getMessage(), "Citizen with BSN 2 does not exist'");
+        assertEquals(r.getMessage(), "Error 404: Citizen with BSN 2 does not exist'");
         assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
     }
 
@@ -291,7 +287,7 @@ public class ChaincodeTest {
         when(ccs.getParameters()).thenReturn(args);
         when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("");
         Response r = cc.invoke(ccs);
-        assertEquals(r.getMessage(), "Citizen with BSN 2 does not exist'");
+        assertEquals(r.getMessage(), "Error 404: Citizen with BSN 2 does not exist'");
         assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
     }
 

@@ -13,9 +13,31 @@ Development / testing
 * Chrome (testing)
 
 ### Tests
-All tests can be ran by executing (Chrome required for angular front-end testing).
+Both the Java chaincode and the front end applications have unit tests. All tests can be 
+ran by executing (Chrome required for angular front-end testing).
 ```console
 foo@bar:~$ make test
+▶ make test
+cd fabric-chaincode/chaincodejava && gradle clean test
+> Task :clean
+> Task :compileJava
+> Task :processResources NO-SOURCE
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+org.hyperledger.fabric.example.CitizenInfoTest
+
+  Test [1] getBsn, 1 PASSED
+  Test [2] getFirstName, firstName PASSED
+  Test [3] getLastName, lastName PASSED
+  Test [4] getAddress, address PASSED
+  Test [5] getFinancialSupport, 100 PASSED
+  Test [6] getFine, 500 PASSED
+....
 ```
 
 ### Starting the network

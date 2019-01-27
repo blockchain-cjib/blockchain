@@ -14,7 +14,6 @@ import com.ing.blockchain.zk.RangeProof;
 import com.ing.blockchain.zk.TTPGenerator;
 import com.ing.blockchain.zk.dto.BoudotRangeProof;
 import com.ing.blockchain.zk.dto.ClosedRange;
-import com.ing.blockchain.zk.dto.Commitment;
 import com.ing.blockchain.zk.dto.TTPMessage;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
