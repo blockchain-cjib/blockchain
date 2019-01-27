@@ -64,7 +64,7 @@ public class Chaincode extends ChaincodeBase {
                             "\"getCitizenMun\", \"getCitizenCJIB\", \"updateCitizen\", \"deleteCitizen\"]");
             }
         } catch (Throwable e) {
-            return newErrorResponse(e);
+            return newErrorResponse("Error " + e);
         }
     }
 
@@ -147,7 +147,7 @@ public class Chaincode extends ChaincodeBase {
      * args(1) = {BSN}
      */
     private Response getCitizenMun(ChaincodeStub stub, List<String> args) {
-        if (args.size() > 2) {
+        if (args.size() > 2 || args.size() == 0) {
             return newErrorResponse("Incorrect number of arguments. Expecting 1 or 2");
         }
 
@@ -188,7 +188,7 @@ public class Chaincode extends ChaincodeBase {
                     .put("financialSupport", citizenInfo.getFinancialSupport())
                     .toString();
         } catch (JsonProcessingException e) {
-            return newErrorResponse(e);
+            return newErrorResponse("Json error" + e);
         }
         _logger.info(response);
 
@@ -239,7 +239,7 @@ public class Chaincode extends ChaincodeBase {
         try {
             response = buildCitizenResponse(citizenInfo, months).toString();
         } catch (JsonProcessingException e) {
-            return newErrorResponse(e);
+            return newErrorResponse("Json error " + e);
         }
         _logger.info(response);
 

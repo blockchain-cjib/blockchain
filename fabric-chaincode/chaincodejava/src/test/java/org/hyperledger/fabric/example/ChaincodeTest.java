@@ -13,6 +13,9 @@ import org.mockito.AdditionalMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -94,19 +97,6 @@ public class ChaincodeTest {
     }
 
     @Test
-    public void setCitizenTest_PrivateDataFailure(){
-        when(ccs.getFunction()).thenReturn("setCitizen");
-        doThrow(IllegalStateException.class).when(ccs).putPrivateData(anyString(), anyString(), Mockito.any(byte[].class));
-        ArrayList<String> citizen = new ArrayList<String>() {
-            {add("1"); add("FirstName"); add("LastName"); add("Adress"); add("100"); add("50"); add("True"); add("1");}};
-        when(ccs.getParameters()).thenReturn(citizen);
-        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("");
-        Response r = cc.invoke(ccs);
-        assertEquals(r.getMessage(), null);
-        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
     public void setCitizenTest_Success(){
         when(ccs.getFunction()).thenReturn("setCitizen");
         ArrayList<String> citizen = new ArrayList<String>() {
@@ -118,5 +108,226 @@ public class ChaincodeTest {
         assertEquals(r.getStatus(), Status.SUCCESS);
         Mockito.verify(ccs, times(1)).getParameters();
         Mockito.verify(ccs, times(1)).getPrivateDataUTF8(anyString(), anyString());
+    }
+    static Stream<Arguments> funcs(){
+        return Stream.of(
+                Arguments.of("getCitizenMun"),
+                Arguments.of("getCitizenCJIB")
+        );
+    }
+    @ParameterizedTest
+    @MethodSource("funcs")
+    public void getCitizenTest_WrongArgumentNumber(String func){
+        when(ccs.getFunction()).thenReturn(func);
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("1"); add("1"); add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Incorrect number of arguments. Expecting 1 or 2");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @ParameterizedTest
+    @MethodSource("funcs")
+    public void getCitizenTest_BSNnull(String func){
+        when(ccs.getFunction()).thenReturn(func);
+        ArrayList<String> args = new ArrayList<String>(){
+            {add(null); add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Bsn was not provided");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @ParameterizedTest
+    @MethodSource("funcs")
+    public void getCitizenTest_NonExistentCitizen(String func){
+        when(ccs.getFunction()).thenReturn(func);
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("1"); add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("");
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Citizen with BSN 1 does not exist'");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @ParameterizedTest
+    @MethodSource("funcs")
+    public void getCitizenTest_PrivateDataFailure(String func){
+        when(ccs.getFunction()).thenReturn(func);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("1");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("1"); add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        CitizenInfo ci = new CitizenInfo();
+        byte[] ci_byte = null;
+        try{
+            ci_byte = objectToByteArray(ci);
+        }catch(Exception e){
+
+        }
+        ci_byte[1] = 101;
+        when(ccs.getPrivateData(anyString(), anyString())).thenReturn(ci_byte);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Conversion Error java.io.StreamCorruptedException: invalid stream header: AC650005");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    private byte[] objectToByteArray(CitizenInfo citizenInfo) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(citizenInfo);
+        oos.flush();
+        return bos.toByteArray();
+    }
+
+    @ParameterizedTest
+    @MethodSource("funcs")
+    public void getCitizenTest_Success(String func){
+        when(ccs.getFunction()).thenReturn(func);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("1");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("1"); add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        CitizenInfo ci = new CitizenInfo("1","firstName", "lastName", "address", 100, 500, true, 1);
+        byte[] ci_byte = null;
+        try{
+            ci_byte = objectToByteArray(ci);
+        }catch(Exception e){
+
+        }
+        when(ccs.getPrivateData(anyString(), anyString())).thenReturn(ci_byte);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "success");
+        assertEquals(r.getStatus(), Status.SUCCESS);
+    }
+    @Test
+    public void deleteCitizenTest_IncorrectArgumentSize(){
+        when(ccs.getFunction()).thenReturn("deleteCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("1"); add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Incorrect number of arguments. Expecting 1");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void deleteCitizenTest_wrongBSN(){
+        when(ccs.getFunction()).thenReturn("deleteCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "1st argument (BSN) must be a non-empty string");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void deleteCitizenTest_NonExistentCitizen(){
+        when(ccs.getFunction()).thenReturn("deleteCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("2");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("");
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Citizen with BSN 2 does not exist'");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void deleteCitizenTest_Success(){
+        when(ccs.getFunction()).thenReturn("deleteCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("2");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("2");
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), null);
+        assertEquals(r.getStatus(), Status.SUCCESS);
+        Mockito.verify(ccs, times(1)).delPrivateData(anyString(), anyString());
+    }
+
+    @Test
+    public void updateCitizenTest_IncorrectArgumentSize(){
+        when(ccs.getFunction()).thenReturn("updateCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Incorrect number of arguments. Expecting 2");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void updateCitizenTest_wrongBSN(){
+        when(ccs.getFunction()).thenReturn("updateCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add(""); add("1");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "1st argument (BSN) must be a non-empty string");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void updateCitizenTest_NonExistentCitizen(){
+        when(ccs.getFunction()).thenReturn("updateCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("2"); add("2");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("");
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Citizen with BSN 2 does not exist'");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void updateCitizenTest_ConversionError(){
+        when(ccs.getFunction()).thenReturn("updateCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("2"); add("2");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("2");
+        byte[] ci_byte = null;
+        CitizenInfo ci = new CitizenInfo("1","firstName", "lastName", "address", 100, 500, true, 1);
+        try{
+            ci_byte = objectToByteArray(ci);
+        }catch(Exception e){
+
+        }
+        ci_byte[1] = 101;
+        when(ccs.getPrivateData(anyString(), anyString())).thenReturn(ci_byte);
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), "Conversion Error");
+        assertEquals(r.getStatus(), Status.INTERNAL_SERVER_ERROR);
+    }
+    @Test
+    public void updateCitizenTest_Success(){
+        when(ccs.getFunction()).thenReturn("deleteCitizen");
+        ArrayList<String> args = new ArrayList<String>(){
+            {add("2");}
+        };
+        when(ccs.getParameters()).thenReturn(args);
+        when(ccs.getPrivateDataUTF8(anyString(), anyString())).thenReturn("2");
+
+        Response r = cc.invoke(ccs);
+        assertEquals(r.getMessage(), null);
+        assertEquals(r.getStatus(), Status.SUCCESS);
+        Mockito.verify(ccs, times(1)).delPrivateData(anyString(), anyString());
     }
 }
