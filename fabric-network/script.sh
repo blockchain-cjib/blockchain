@@ -29,7 +29,7 @@ CORE_PEER_ADDRESS=peer4.org1.example.com:7051 peer chaincode install -n mycc -p 
 
 #instantiate the chaincode on peer0
 echo "Instantiating chaincode on peer0"
-CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n mycc -v v1 -c '{"Args":[""]}' --collections-config chaincode/chaincode/collections_config.json
+CORE_PEER_ADDRESS=peer0.org1.example.com:7051 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n mycc -v v1 -c '{"Args":[""]}' --collections-config chaincode/chaincodejava/collections_config.json
 
 
 
